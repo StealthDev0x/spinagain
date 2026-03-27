@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat, am I cooked $AGAIN?</title>
+    <style>
+      :root {
+        --bg-1: #030712;
+        --bg-2: #0f172a;
+        --text: #f8fafc;
+        --muted: #94a3b8;
+        --green: #22c55e;
+        --purple: #8b5cf6;
+        --yellow: #facc15;
+        --cyan: #22d3ee;
+        --orange: #fb923c;
+        --border: rgba(255, 255, 255, 0.1);
+        --shadow: 0 25px 70px rgba(0, 0, 0, 0.45);
+      }
+
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        overflow-x: hidden;
+        font-family: Arial, sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at 10% 20%, rgba(250, 204, 21, 0.14), transparent 20%),
+          radial-gradient(circle at 85% 15%, rgba(34, 211, 238, 0.16), transparent 20%),
+          radial-gradient(circle at 50% 80%, rgba(139, 92, 246, 0.18), transparent 24%),
+          linear-gradient(180deg, var(--bg-2), var(--bg-1));
+      }
+
+      .noise, .glow, .grid-bg {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+      }
+
+      .noise {
+        opacity: 0.05;
+        background-image: radial-gradient(circle, white 1px, transparent 1px);
+        background-size: 18px 18px;
+      }
+
+      .grid-bg {
+        background-image:
+          linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+        background-size: 40px 40px;
+        mask-image: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent 85%);
+      }
+
+      .glow::before,
+      .glow::after {
+        content: "";
+        position: absolute;
+        width: 420px;
+        height: 420px;
+        border-radius: 50%;
+        filter: blur(80px);
+        opacity: 0.2;
+      }
+
+      .glow::before {
+        background: var(--yellow);
+        top: -120px;
+        left: -90px;
+      }
+
+      .glow::after {
+        background: var(--cyan);
+        right: -100px;
+        top: 80px;
+      }
+
+      .wrap {
+        position: relative;
+        z-index: 1;
+        max-width: 920px;
+        margin: 0 auto;
+        padding: 24px 16px 40px;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+      }
+
+      .token-badge,
+      .live-pill,
+      .tag {
+        border: 1px solid var(--border);
+        background: rgba(255,255,255,0.05);
+        border-radius: 999px;
+        padding: 10px 14px;
+        color: var(--text);
+        backdrop-filter: blur(10px);
+      }
+
+      .token-badge {
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        box-shadow: 0 0 25px rgba(250, 204, 21, 0.16);
+      }
+
+      .token-badge span,
+      .ticker-item span,
+      .hero .again { color: var(--yellow); }
+
+      .live-pill {
+        color: var(--muted);
+        font-size: 0.95rem;
+      }
+
+      .live-dot {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: var(--green);
+        margin-right: 8px;
+        box-shadow: 0 0 15px rgba(34, 197, 94, 0.8);
+        animation: pulse 1.3s infinite;
+      }
+
+      .hero {
+        text-align: center;
+        padding: 18px 10px 10px;
+      }
+
+      .hero h1 {
+        margin: 0;
+        font-size: clamp(2.5rem, 8vw, 5.5rem);
+        line-height: 0.95;
+        font-weight: 900;
+        letter-spacing: -0.04em;
+        text-transform: uppercase;
+        text-shadow: 0 0 35px rgba(250, 204, 21, 0.18);
+      }
+
+      .sub {
+        max-width: 700px;
+        margin: 14px auto 0;
+        color: #dbeafe;
+        font-size: 1.02rem;
+        line-height: 1.6;
+      }
+
+      .ticker-strip {
+        margin: 22px 0 18px;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: rgba(255,255,255,0.05);
+      }
+
+      .ticker-track {
+        display: flex;
+        width: max-content;
+        animation: slide 22s linear infinite;
+      }
+
+      .ticker-item {
+        padding: 12px 18px;
+        font-weight: 700;
+        color: #e2e8f0;
+        white-space: nowrap;
+      }
+
+      .main-card,
+      .footer-card {
+        background: linear-gradient(180deg, rgba(16, 23, 42, 0.92), rgba(7, 10, 20, 0.94));
+        border: 1px solid var(--border);
+        border-radius: 28px;
+        padding: 18px;
+        backdrop-filter: blur(14px);
+        box-shadow: var(--shadow);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .main-card::before,
+      .footer-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(255,255,255,0.06), transparent 35%, transparent 65%, rgba(255,255,255,0.04));
+        pointer-events: none;
+      }
+
+      .reveal-card {
+        position: relative;
+        z-index: 1;
+        min-height: 320px;
+        border-radius: 24px;
+        padding: 18px;
+        background:
+          radial-gradient(circle at top, rgba(34, 211, 238, 0.11), transparent 38%),
+          radial-gradient(circle at bottom, rgba(250, 204, 21, 0.10), transparent 42%),
+          rgba(255,255,255,0.04);
+        border: 1px solid var(--border);
+        margin-bottom: 16px;
+      }
+
+      .reveal-empty {
+        min-height: 280px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        color: var(--muted);
+        gap: 10px;
+      }
+
+      .meme-wheel {
+        position: relative;
+        width: 92px;
+        height: 92px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-size: 2rem;
+        background: conic-gradient(from 0deg, var(--yellow), var(--orange), var(--cyan), var(--purple), var(--yellow));
+        box-shadow: 0 0 28px rgba(250, 204, 21, 0.2);
+        animation: rotateGlow 9s linear infinite;
+      }
+
+      .meme-wheel::after {
+        content: "";
+        position: absolute;
+        width: 74px;
+        height: 74px;
+        border-radius: 50%;
+        background: #09111f;
+        border: 1px solid rgba(255,255,255,0.08);
+      }
+
+      .meme-wheel span {
+        position: relative;
+        z-index: 1;
+      }
+
+      .reveal-empty h2,
+      .coin-head h2 {
+        margin: 0;
+        font-size: 1.8rem;
+        text-transform: uppercase;
+      }
+
+      .reveal-empty p {
+        margin: 0;
+        max-width: 420px;
+        line-height: 1.6;
+      }
+
+      .coin-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+        flex-wrap: wrap;
+      }
+
+      .coin-head {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .coin-head img {
+        width: 72px;
+        height: 72px;
+        border-radius: 20px;
+        object-fit: cover;
+        border: 1px solid var(--border);
+        background: rgba(255,255,255,0.05);
+      }
+
+      .coin-head p {
+        margin: 6px 0 0;
+        color: var(--muted);
+      }
+
+      .verdict {
+        padding: 10px 14px;
+        border-radius: 999px;
+        font-weight: 900;
+        text-transform: uppercase;
+        border: 1px solid var(--border);
+        background: linear-gradient(135deg, rgba(250, 204, 21, 0.16), rgba(34, 211, 238, 0.16));
+      }
+
+      .coin-copy {
+        margin: 16px 0 0;
+        color: #dbeafe;
+        line-height: 1.65;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 14px;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+        margin: 14px 0;
+      }
+
+      .stat {
+        border-radius: 18px;
+        padding: 13px;
+        background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+        border: 1px solid var(--border);
+      }
+
+      .label {
+        color: var(--muted);
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 6px;
+      }
+
+      .value {
+        font-size: 1rem;
+        font-weight: 800;
+        word-break: break-word;
+      }
+
+      .mini-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 14px;
+      }
+
+      .tag {
+        padding: 9px 12px;
+        color: #dbeafe;
+        font-weight: 700;
+      }
+
+      .links {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 14px;
+      }
+
+      .links a,
+      .footer-links a,
+      .action-btn,
+      .share-float-btn,
+      .share-float-dismiss {
+        text-decoration: none;
+        color: white;
+        padding: 12px 14px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: rgba(255,255,255,0.06);
+        font-weight: 800;
+      }
+
+      .control-box {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        gap: 12px;
+      }
+
+      .spin-copy {
+        text-align: center;
+        color: #dbeafe;
+        line-height: 1.6;
+        font-size: 1rem;
+        margin: 2px 0 0;
+      }
+
+      .spin-btn,
+      .action-btn,
+      .share-float-btn,
+      .share-float-dismiss {
+        cursor: pointer;
+        transition: transform 0.15s ease, opacity 0.15s ease, box-shadow 0.15s ease;
+      }
+
+      .spin-btn:hover,
+      .action-btn:hover,
+      .share-float-btn:hover,
+      .share-float-dismiss:hover { transform: translateY(-2px) scale(1.01); }
+
+      .spin-btn:disabled,
+      .action-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+      .spin-btn {
+        border: 0;
+        border-radius: 999px;
+        padding: 18px 24px;
+        font-size: 1.08rem;
+        font-weight: 900;
+        letter-spacing: 0.02em;
+        background: linear-gradient(135deg, var(--yellow), #ffb703, var(--cyan));
+        color: #0b1020;
+        box-shadow: 0 14px 35px rgba(250, 204, 21, 0.24);
+      }
+
+      .action-row {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .status-box {
+        padding: 13px 14px;
+        border-radius: 16px;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid var(--border);
+        color: #e2e8f0;
+        font-weight: 700;
+        text-align: center;
+      }
+
+      .footer-card {
+        margin-top: 18px;
+      }
+
+      .footer-inner {
+        position: relative;
+        z-index: 1;
+      }
+
+      .footer-inner h3 {
+        margin: 0 0 12px;
+        text-transform: uppercase;
+      }
+
+      .footer-grid {
+        display: grid;
+        grid-template-columns: 1.25fr 0.75fr;
+        gap: 12px;
+      }
+
+      .footer-box {
+        padding: 14px;
+        border-radius: 18px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid var(--border);
+      }
+
+      .footer-box strong {
+        display: block;
+        margin-bottom: 8px;
+      }
+
+      .ca {
+        padding: 12px 14px;
+        border-radius: 14px;
+        background: rgba(255,255,255,0.05);
+        border: 1px dashed rgba(255,255,255,0.16);
+        word-break: break-word;
+        color: #dbeafe;
+      }
+
+      .footer-links {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 8px;
+      }
+
+      .footer-note {
+        text-align: center;
+        color: var(--muted);
+        font-size: 0.92rem;
+        margin-top: 18px;
+      }
+
+      .share-float {
+        position: fixed;
+        right: 18px;
+        bottom: 18px;
+        z-index: 40;
+        width: min(360px, calc(100vw - 32px));
+        border-radius: 24px;
+        border: 1px solid var(--border);
+        background:
+          radial-gradient(circle at top, rgba(250, 204, 21, 0.18), transparent 35%),
+          radial-gradient(circle at bottom, rgba(34, 211, 238, 0.14), transparent 38%),
+          linear-gradient(180deg, rgba(16, 23, 42, 0.96), rgba(7, 10, 20, 0.98));
+        box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
+        padding: 18px;
+        backdrop-filter: blur(12px);
+        opacity: 0;
+        transform: translateY(20px);
+        pointer-events: none;
+        transition: opacity 0.22s ease, transform 0.22s ease;
+      }
+
+      .share-float.open {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+      }
+
+      .share-float-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .share-float-kicker {
+        display: inline-block;
+        padding: 7px 11px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: rgba(255,255,255,0.06);
+        font-size: 0.76rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--yellow);
+      }
+
+      .share-float-close {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 1px solid var(--border);
+        background: rgba(255,255,255,0.06);
+        color: white;
+        cursor: pointer;
+        font-size: 1rem;
+      }
+
+      .share-float h3 {
+        margin: 0 0 8px;
+        font-size: 1.2rem;
+        line-height: 1.2;
+        text-transform: uppercase;
+      }
+
+      .share-float p {
+        margin: 0;
+        color: #dbeafe;
+        line-height: 1.55;
+        font-size: 0.95rem;
+      }
+
+      .share-float-coin {
+        margin: 14px 0;
+        padding: 12px 14px;
+        border-radius: 18px;
+        border: 1px solid var(--border);
+        background: rgba(255,255,255,0.05);
+      }
+
+      .share-float-coin strong {
+        display: block;
+        margin-bottom: 5px;
+        font-size: 1rem;
+      }
+
+      .share-float-actions {
+        display: grid;
+        gap: 10px;
+      }
+
+      .share-float-btn {
+        border: 0;
+        background: linear-gradient(135deg, var(--yellow), #ffb703, var(--cyan));
+        color: #09111f;
+        padding: 15px 16px;
+        font-size: 1rem;
+      }
+
+      .share-float-dismiss {
+        background: rgba(255,255,255,0.06);
+        color: white;
+      }
+
+      @media (max-width: 700px) {
+        .stats-grid,
+        .action-row,
+        .footer-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .coin-top {
+          flex-direction: column;
+        }
+
+        .coin-head {
+          align-items: flex-start;
+        }
+
+        .share-float {
+          right: 10px;
+          left: 10px;
+          bottom: 10px;
+          width: auto;
+          border-radius: 20px;
+        }
+      }
+
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.15); opacity: 0.7; }
+      }
+
+      @keyframes slide {
+        from { transform: translateX(0); }
+        to { transform: translateX(-50%); }
+      }
+
+      @keyframes rotateGlow {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="noise"></div>
+    <div class="grid-bg"></div>
+    <div class="glow"></div>
+
+    <div class="wrap">
+      <div class="topbar">
+        <div class="token-badge">Make Solana Fun <span>$AGAIN</span></div>
+        <div class="live-pill"><span class="live-dot"></span>Live Solana degen feed</div>
+      </div>
+
+      <section class="hero">
+        <h1>
+          Chat, am I cooked<br />
+          <span class="again">$AGAIN</span> ?
+        </h1>
+        <p class="sub">
+          Spin the degen wheel. Pull a random Solana coin. Farm dopamine. Shill the result on X.
+        </p>
+      </section>
+
+      <div class="ticker-strip">
+        <div class="ticker-track">
+          <div class="ticker-item">⚡ Spin random Solana coins</div>
+          <div class="ticker-item">🔥 Make Solana Fun <span>$AGAIN</span></div>
+          <div class="ticker-item">🧠 Stop pretending you know</div>
+          <div class="ticker-item">🚀 Zero backend. Pure degen energy.</div>
+          <div class="ticker-item">💸 Dopamine &gt; discipline</div>
+          <div class="ticker-item">🌙 Wen conviction?</div>
+          <div class="ticker-item">⚡ Spin random Solana coins</div>
+          <div class="ticker-item">🔥 Make Solana Fun <span>$AGAIN</span></div>
+          <div class="ticker-item">🧠 Stop pretending you know</div>
+          <div class="ticker-item">🚀 Zero backend. Pure degen energy.</div>
+          <div class="ticker-item">💸 Dopamine &gt; discipline</div>
+          <div class="ticker-item">🌙 Wen conviction?</div>
+        </div>
+      </div>
+
+      <section class="main-card">
+        <div id="result" class="reveal-card">
+          <div class="reveal-empty">
+            <div class="meme-wheel"><span>🎰</span></div>
+            <h2>Stop pretending that you know.</h2>
+            <p>Spare yourself 5h in the trenches, just buy random :D</p>
+          </div>
+        </div>
+
+        <div class="control-box">
+          <p class="spin-copy">One window. One spin. One random Solana life decision.</p>
+          <button id="spinBtn" class="spin-btn">🎰 Spin $AGAIN</button>
+
+          <div class="action-row">
+            <button id="shareBtn" class="action-btn" disabled>Share on X</button>
+            <button id="copyBtn" class="action-btn" disabled>Copy shill text</button>
+          </div>
+
+          <div class="status-box" id="statusText">Ready to spin. Pure irresponsible optimism is online.</div>
+        </div>
+      </section>
+
+      <section class="footer-card">
+        <div class="footer-inner">
+          <h3>$AGAIN links</h3>
+          <div class="footer-grid">
+            <div class="footer-box">
+              <strong>Contract address</strong>
+              <div class="ca">7MPZhoJMheby5wbTwHnFVLNz7aknnEyShbNQb86Ypump</div>
+            </div>
+            <div class="footer-box">
+              <strong>Bagholder visibility pack</strong>
+              <div class="footer-links">
+                <a href="https://x.com/Again179966" target="_blank" rel="noreferrer">X Profile</a>
+                <a href="https://t.me/get_rekt_again" target="_blank" rel="noreferrer">Telegram</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <p class="footer-note">This is meme-grade data for entertainment. Not financial advice. Definitely not emotional advice.</p>
+    </div>
+
+    <div id="shareFloat" class="share-float" aria-hidden="true">
+      <div class="share-float-head">
+        <div class="share-float-kicker">Fresh degen find</div>
+        <button id="shareFloatClose" class="share-float-close" aria-label="Close">✕</button>
+      </div>
+      <h3>Post before CT pretends they knew first</h3>
+      <p>You found a random Solana coin. Time to expose your conviction publicly.</p>
+      <div id="shareFloatCoin" class="share-float-coin">
+        <strong>No coin yet</strong>
+        <span>Spin first, then flex.</span>
+      </div>
+      <div class="share-float-actions">
+        <button id="shareFloatBtn" class="share-float-btn">Post your degen find on X</button>
+        <button id="shareFloatDismiss" class="share-float-dismiss">Later</button>
+      </div>
+    </div>
+
+    <script>
+      const spinBtn = document.getElementById('spinBtn');
+      const shareBtn = document.getElementById('shareBtn');
+      const copyBtn = document.getElementById('copyBtn');
+      const result = document.getElementById('result');
+      const statusText = document.getElementById('statusText');
+      const shareFloat = document.getElementById('shareFloat');
+      const shareFloatCoin = document.getElementById('shareFloatCoin');
+      const shareFloatBtn = document.getElementById('shareFloatBtn');
+      const shareFloatDismiss = document.getElementById('shareFloatDismiss');
+      const shareFloatClose = document.getElementById('shareFloatClose');
+
+      let currentCoin = null;
+      let shareFloatTimer = null;
+
+      function formatMoney(value) {
+        if (value === null || value === undefined || Number.isNaN(Number(value))) return 'N/A';
+        return new Intl.NumberFormat('en-US', {
+          style: 'currency',
+          currency: 'USD',
+          notation: Number(value) >= 1000000 ? 'compact' : 'standard',
+          maximumFractionDigits: 2
+        }).format(Number(value));
+      }
+
+      function formatPercent(value) {
+        if (value === null || value === undefined || Number.isNaN(Number(value))) return 'N/A';
+        const num = Number(value);
+        return `${num >= 0 ? '+' : ''}${num.toFixed(2)}%`;
+      }
+
+      function shortenAddress(address) {
+        if (!address) return 'N/A';
+        return `${address.slice(0, 6)}...${address.slice(-4)}`;
+      }
+
+      function normalizeLinkLabel(type, fallback) {
+        if (type === 'twitter') return 'X';
+        if (type === 'telegram') return 'Telegram';
+        if (type === 'website') return 'Website';
+        return fallback || type || 'Link';
+      }
+
+      function pickBestPair(pairs = []) {
+        if (!pairs.length) return null;
+        return [...pairs].sort((a, b) => {
+          const aLiq = a?.liquidity?.usd || 0;
+          const bLiq = b?.liquidity?.usd || 0;
+          return bLiq - aLiq;
+        })[0];
+      }
+
+      function getCookedRating(change) {
+        if (change === null || change === undefined || Number.isNaN(Number(change))) {
+          return 'Unknown levels of cooked';
+        }
+
+        const num = Number(change);
+        if (num > 120) return 'Turbo sent. Peak degen euphoria.';
+        if (num > 40) return 'Suspiciously cooking upward.';
+        if (num > 0) return 'Mildly cooked, but hopeful.';
+        if (num > -20) return 'Shaky conviction zone.';
+        if (num > -50) return 'Medium rare portfolio pain.';
+        return 'Deep fried. Spiritual damage detected.';
+      }
+
+      function getVerdict(change) {
+        const num = Number(change);
+        if (Number.isNaN(num)) return 'UNKNOWN COOKED';
+        if (num > 40) return 'NOT COOKED';
+        if (num > -20) return 'KINDA COOKED';
+        return 'DEEPLY COOKED';
+      }
+
+      function getDegenScore(liquidity, volume, change) {
+        const liq = Number(liquidity) || 0;
+        const vol = Number(volume) || 0;
+        const chg = Math.abs(Number(change) || 0);
+        const raw = Math.min(99, Math.round((liq / 15000) + (vol / 30000) + chg));
+        return raw < 12 ? 12 : raw;
+      }
+
+      function buildShillText() {
+        if (!currentCoin) return '';
+
+        return `Chat am I cooked $AGAIN ? :D\n\n` +
+          `I just spun ${currentCoin.name} ($${currentCoin.symbol}) on Solana.\n` +
+          `Price: ${currentCoin.priceUsd ? `$${Number(currentCoin.priceUsd).toFixed(8)}` : 'N/A'}\n` +
+          `MCap: ${formatMoney(currentCoin.marketCap)}\n` +
+          `24h: ${formatPercent(currentCoin.priceChange24h)}\n` +
+          `Cooked meter: ${currentCoin.cookedRating}\n\n` +
+          `Token: ${currentCoin.tokenAddress}`;
+      }
+
+      function hideShareFloat() {
+        if (shareFloatTimer) {
+          clearTimeout(shareFloatTimer);
+          shareFloatTimer = null;
+        }
+        shareFloat.classList.remove('open');
+        shareFloat.setAttribute('aria-hidden', 'true');
+      }
+
+      function showShareFloat() {
+        if (!currentCoin) return;
+        shareFloatCoin.innerHTML = `
+          <strong>${currentCoin.name} ($${currentCoin.symbol})</strong>
+          <span>${currentCoin.verdict} · ${formatPercent(currentCoin.priceChange24h)} in 24h</span>
+        `;
+        shareFloat.classList.add('open');
+        shareFloat.setAttribute('aria-hidden', 'false');
+      }
+
+      function scheduleShareFloat() {
+        hideShareFloat();
+        shareFloatTimer = setTimeout(() => {
+          showShareFloat();
+          shareFloatTimer = null;
+        }, 3000);
+      }
+
+      function renderCoin(coin) {
+        const linksHtml = (coin.links || []).slice(0, 4).map(link => {
+          const label = normalizeLinkLabel(link.type, link.label);
+          return `<a href="${link.url}" target="_blank" rel="noreferrer">${label}</a>`;
+        }).join('');
+
+        result.innerHTML = `
+          <div class="coin-top">
+            <div class="coin-head">
+              <img src="${coin.icon || 'https://placehold.co/80x80?text=%F0%9F%AA%99'}" alt="${coin.name} logo" />
+              <div>
+                <h2>${coin.name || 'Unknown coin'}</h2>
+                <p>$${coin.symbol || '???'} · ${coin.dexId || 'Unknown DEX'}</p>
+              </div>
+            </div>
+            <div class="verdict">${coin.verdict}</div>
+          </div>
+
+          <div class="coin-copy">
+            <strong>Cooked meter:</strong> ${coin.cookedRating}<br /><br />
+            ${coin.description || 'No spicy description found. This one is either ultra early or operating fully on vibes.'}
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat">
+              <div class="label">Price</div>
+              <div class="value">${coin.priceUsd ? `$${Number(coin.priceUsd).toFixed(8)}` : 'N/A'}</div>
+            </div>
+            <div class="stat">
+              <div class="label">Market cap</div>
+              <div class="value">${formatMoney(coin.marketCap)}</div>
+            </div>
+            <div class="stat">
+              <div class="label">24h volume</div>
+              <div class="value">${formatMoney(coin.volume24h)}</div>
+            </div>
+            <div class="stat">
+              <div class="label">24h change</div>
+              <div class="value">${formatPercent(coin.priceChange24h)}</div>
+            </div>
+            <div class="stat">
+              <div class="label">Liquidity</div>
+              <div class="value">${formatMoney(coin.liquidityUsd)}</div>
+            </div>
+            <div class="stat">
+              <div class="label">Address</div>
+              <div class="value">${shortenAddress(coin.tokenAddress)}</div>
+            </div>
+          </div>
+
+          <div class="mini-meta">
+            <div class="tag">⚡ Degen score: ${coin.degenScore}/99</div>
+            <div class="tag">🎲 Randomness won again</div>
+          </div>
+
+          <div class="links">
+            ${coin.dexUrl ? `<a href="${coin.dexUrl}" target="_blank" rel="noreferrer">DEX Screener</a>` : ''}
+            ${linksHtml}
+          </div>
+        `;
+      }
+
+      async function fetchRandomCoin() {
+        hideShareFloat();
+        statusText.textContent = 'Cooking... scanning Solana for your next bad decision.';
+        spinBtn.disabled = true;
+        shareBtn.disabled = true;
+        copyBtn.disabled = true;
+
+        result.innerHTML = `
+          <div class="reveal-empty">
+            <div class="meme-wheel"><span>🌀</span></div>
+            <h2>Stop pretending that you know.</h2>
+            <p>Spare yourself 5h in the trenches, just buy random :D</p>
+          </div>
+        `;
+
+        try {
+          const boostsResponse = await fetch('https://api.dexscreener.com/token-boosts/latest/v1');
+          if (!boostsResponse.ok) throw new Error('Could not load boosted tokens.');
+
+          const boosts = await boostsResponse.json();
+          const solanaBoosts = boosts.filter(item => item.chainId === 'solana');
+          if (!solanaBoosts.length) throw new Error('No boosted Solana tokens found right now.');
+
+          const randomBoost = solanaBoosts[Math.floor(Math.random() * solanaBoosts.length)];
+
+          const pairResponse = await fetch(`https://api.dexscreener.com/token-pairs/v1/solana/${randomBoost.tokenAddress}`);
+          if (!pairResponse.ok) throw new Error('Could not load token details.');
+
+          const pairs = await pairResponse.json();
+          const bestPair = pickBestPair(pairs);
+          if (!bestPair) throw new Error('No pair data found for this token.');
+
+          currentCoin = {
+            name: bestPair.baseToken?.name || 'Unknown',
+            symbol: bestPair.baseToken?.symbol || '???',
+            tokenAddress: randomBoost.tokenAddress,
+            icon: randomBoost.icon,
+            description: randomBoost.description,
+            links: randomBoost.links || bestPair.info?.socials || [],
+            dexId: bestPair.dexId,
+            priceUsd: bestPair.priceUsd,
+            marketCap: bestPair.marketCap || bestPair.fdv,
+            volume24h: bestPair.volume?.h24,
+            priceChange24h: bestPair.priceChange?.h24,
+            liquidityUsd: bestPair.liquidity?.usd,
+            dexUrl: bestPair.url,
+            cookedRating: getCookedRating(bestPair.priceChange?.h24),
+            verdict: getVerdict(bestPair.priceChange?.h24),
+            degenScore: getDegenScore(bestPair.liquidity?.usd, bestPair.volume?.h24, bestPair.priceChange?.h24)
+          };
+
+          renderCoin(currentCoin);
+          statusText.textContent = `${currentCoin.name} ($${currentCoin.symbol}) just dropped on your screen. ${currentCoin.cookedRating}`;
+          shareBtn.disabled = false;
+          copyBtn.disabled = false;
+          scheduleShareFloat();
+        } catch (error) {
+          result.innerHTML = `<div class="reveal-empty"><div class="meme-wheel"><span>💥</span></div><h2>Temporary emotional liquidation</h2><p>${error.message} Hit spin again.</p></div>`;
+          statusText.textContent = 'Temporary emotional liquidation. Try again.';
+        } finally {
+          spinBtn.disabled = false;
+        }
+      }
+
+      function shareOnX() {
+        if (!currentCoin) return;
+        const text = buildShillText();
+        const url = currentCoin.dexUrl || 'https://dexscreener.com/solana';
+        const shareUrl = `https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+        window.open(shareUrl, '_blank', 'noopener,noreferrer');
+      }
+
+      async function copyShillText() {
+        if (!currentCoin) return;
+
+        try {
+          await navigator.clipboard.writeText(buildShillText());
+          statusText.textContent = 'Shill text copied. Go post your conviction.';
+        } catch (error) {
+          statusText.textContent = 'Copy failed. Your browser is being difficult.';
+        }
+      }
+
+      spinBtn.addEventListener('click', fetchRandomCoin);
+      shareBtn.addEventListener('click', shareOnX);
+      copyBtn.addEventListener('click', copyShillText);
+      shareFloatBtn.addEventListener('click', shareOnX);
+      shareFloatDismiss.addEventListener('click', hideShareFloat);
+      shareFloatClose.addEventListener('click', hideShareFloat);
+    </script>
+  </body>
+</html>
