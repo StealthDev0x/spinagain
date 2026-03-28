@@ -6,21 +6,26 @@
     <title>Chat, am I cooked $AGAIN?</title>
     <style>
       :root {
-        --bg-1: #030712;
-        --bg-2: #0f172a;
-        --text: #f8fafc;
-        --muted: #94a3b8;
-        --green: #22c55e;
-        --purple: #8b5cf6;
+        --bg: #030303;
+        --panel: #090909;
+        --panel-2: #0d0d0d;
+        --line: rgba(255,255,255,0.08);
+        --line-strong: rgba(255,255,255,0.14);
+        --text: #f5f5f5;
+        --muted: #9ca3af;
         --yellow: #facc15;
-        --cyan: #22d3ee;
         --orange: #fb923c;
-        --border: rgba(255, 255, 255, 0.1);
-        --shadow: 0 25px 70px rgba(0, 0, 0, 0.45);
+        --cyan: #22d3ee;
+        --green: #22c55e;
+        --red: #ef4444;
+        --purple: #8b5cf6;
       }
 
       * { box-sizing: border-box; }
-      html { scroll-behavior: smooth; }
+
+      html {
+        scroll-behavior: smooth;
+      }
 
       body {
         margin: 0;
@@ -29,61 +34,95 @@
         font-family: Arial, sans-serif;
         color: var(--text);
         background:
-          radial-gradient(circle at 10% 20%, rgba(250, 204, 21, 0.14), transparent 20%),
-          radial-gradient(circle at 85% 15%, rgba(34, 211, 238, 0.16), transparent 20%),
-          radial-gradient(circle at 50% 80%, rgba(139, 92, 246, 0.18), transparent 24%),
-          linear-gradient(180deg, var(--bg-2), var(--bg-1));
+          radial-gradient(circle at 50% -10%, rgba(250,204,21,0.08), transparent 26%),
+          radial-gradient(circle at 100% 0%, rgba(34,211,238,0.05), transparent 18%),
+          linear-gradient(180deg, #050505 0%, #020202 100%);
       }
 
-      .noise, .glow, .grid-bg {
+      .noise,
+      .grid-bg {
         position: fixed;
         inset: 0;
         pointer-events: none;
       }
 
       .noise {
-        opacity: 0.05;
+        opacity: 0.035;
         background-image: radial-gradient(circle, white 1px, transparent 1px);
-        background-size: 18px 18px;
+        background-size: 16px 16px;
       }
 
       .grid-bg {
         background-image:
-          linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
-        background-size: 40px 40px;
-        mask-image: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent 85%);
-      }
-
-      .glow::before,
-      .glow::after {
-        content: "";
-        position: absolute;
-        width: 420px;
-        height: 420px;
-        border-radius: 50%;
-        filter: blur(80px);
-        opacity: 0.2;
-      }
-
-      .glow::before {
-        background: var(--yellow);
-        top: -120px;
-        left: -90px;
-      }
-
-      .glow::after {
-        background: var(--cyan);
-        right: -100px;
-        top: 80px;
+          linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+        background-size: 38px 38px;
+        mask-image: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent 86%);
       }
 
       .wrap {
         position: relative;
         z-index: 1;
-        max-width: 920px;
+        max-width: 980px;
         margin: 0 auto;
-        padding: 24px 16px 40px;
+        padding: 16px 14px 40px;
+      }
+
+      .site-shell {
+        position: relative;
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        overflow: hidden;
+        background:
+          linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.005)),
+          linear-gradient(180deg, #090909, #050505);
+        box-shadow: 0 24px 80px rgba(0,0,0,0.45);
+      }
+
+      .site-shell::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background:
+          radial-gradient(circle at top, rgba(250,204,21,0.05), transparent 26%),
+          linear-gradient(135deg, rgba(255,255,255,0.025), transparent 30%, transparent 70%, rgba(255,255,255,0.015));
+      }
+
+      .warning-strip {
+        position: relative;
+        z-index: 1;
+        overflow: hidden;
+        border-bottom: 1px solid var(--line);
+        background:
+          repeating-linear-gradient(
+            -45deg,
+            rgba(250,204,21,0.15) 0 18px,
+            rgba(20,20,20,0.95) 18px 36px
+          );
+      }
+
+      .warning-track {
+        display: flex;
+        width: max-content;
+        animation: warningSlide 22s linear infinite;
+      }
+
+      .warning-item {
+        padding: 10px 18px;
+        white-space: nowrap;
+        text-transform: uppercase;
+        font-weight: 900;
+        font-size: 0.86rem;
+        letter-spacing: 0.08em;
+        color: #fef08a;
+        text-shadow: 0 0 10px rgba(250,204,21,0.08);
+      }
+
+      .inner {
+        position: relative;
+        z-index: 1;
+        padding: 16px;
       }
 
       .topbar {
@@ -92,160 +131,226 @@
         align-items: center;
         gap: 12px;
         flex-wrap: wrap;
-        margin-bottom: 16px;
+        margin-bottom: 18px;
+      }
+
+      .top-left,
+      .top-right {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
       }
 
       .token-badge,
       .live-pill,
-      .tag {
-        border: 1px solid var(--border);
-        background: rgba(255,255,255,0.05);
+      .micro-pill {
         border-radius: 999px;
-        padding: 10px 14px;
-        color: var(--text);
-        backdrop-filter: blur(10px);
+        border: 1px solid var(--line);
+        background: rgba(255,255,255,0.03);
+        padding: 9px 13px;
+        font-weight: 800;
+        backdrop-filter: blur(8px);
       }
 
       .token-badge {
-        font-weight: 800;
         letter-spacing: 0.04em;
-        box-shadow: 0 0 25px rgba(250, 204, 21, 0.16);
       }
 
-      .token-badge span,
-      .ticker-item span,
-      .hero .again { color: var(--yellow); }
+      .token-badge span {
+        color: var(--yellow);
+      }
 
       .live-pill {
         color: var(--muted);
-        font-size: 0.95rem;
       }
 
       .live-dot {
         display: inline-block;
-        width: 10px;
-        height: 10px;
+        width: 9px;
+        height: 9px;
+        margin-right: 8px;
         border-radius: 50%;
         background: var(--green);
-        margin-right: 8px;
-        box-shadow: 0 0 15px rgba(34, 197, 94, 0.8);
+        box-shadow: 0 0 12px rgba(34,197,94,0.8);
         animation: pulse 1.3s infinite;
+      }
+
+      .micro-pill {
+        color: #d1d5db;
+        font-size: 0.85rem;
       }
 
       .hero {
         text-align: center;
-        padding: 18px 10px 10px;
+        padding: 12px 8px 8px;
       }
 
       .hero h1 {
         margin: 0;
-        font-size: clamp(2.5rem, 8vw, 5.5rem);
-        line-height: 0.95;
+        font-size: clamp(2.7rem, 8vw, 6rem);
+        line-height: 0.92;
         font-weight: 900;
-        letter-spacing: -0.04em;
+        letter-spacing: -0.06em;
         text-transform: uppercase;
-        text-shadow: 0 0 35px rgba(250, 204, 21, 0.18);
+      }
+
+      .hero .again {
+        color: var(--yellow);
+        text-shadow: 0 0 18px rgba(250,204,21,0.18);
       }
 
       .sub {
-        max-width: 700px;
+        max-width: 720px;
         margin: 14px auto 0;
-        color: #dbeafe;
+        color: #d1d5db;
+        line-height: 1.65;
         font-size: 1.02rem;
-        line-height: 1.6;
+      }
+
+      .hero-kickers {
+        margin-top: 18px;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .hero-kicker {
+        border-radius: 999px;
+        padding: 8px 12px;
+        border: 1px solid var(--line);
+        background: rgba(255,255,255,0.025);
+        color: #e5e7eb;
+        font-weight: 800;
+        font-size: 0.84rem;
       }
 
       .ticker-strip {
         margin: 22px 0 18px;
         overflow: hidden;
-        border: 1px solid var(--border);
-        border-radius: 999px;
-        background: rgba(255,255,255,0.05);
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        background:
+          linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
       }
 
       .ticker-track {
         display: flex;
         width: max-content;
-        animation: slide 22s linear infinite;
+        animation: slide 20s linear infinite;
       }
 
       .ticker-item {
         padding: 12px 18px;
-        font-weight: 700;
-        color: #e2e8f0;
+        font-weight: 800;
+        color: #e5e7eb;
         white-space: nowrap;
       }
 
-      .main-card,
-      .footer-card {
-        background: linear-gradient(180deg, rgba(16, 23, 42, 0.92), rgba(7, 10, 20, 0.94));
-        border: 1px solid var(--border);
-        border-radius: 28px;
-        padding: 18px;
-        backdrop-filter: blur(14px);
-        box-shadow: var(--shadow);
-        position: relative;
-        overflow: hidden;
+      .ticker-item span {
+        color: var(--yellow);
       }
 
-      .main-card::before,
-      .footer-card::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(135deg, rgba(255,255,255,0.06), transparent 35%, transparent 65%, rgba(255,255,255,0.04));
-        pointer-events: none;
+      .main-zone {
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        background:
+          linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005));
+      }
+
+      .reveal-wrap {
+        padding: 18px 0 10px;
       }
 
       .reveal-card {
         position: relative;
-        z-index: 1;
-        min-height: 320px;
-        border-radius: 24px;
-        padding: 18px;
-        background:
-          radial-gradient(circle at top, rgba(34, 211, 238, 0.11), transparent 38%),
-          radial-gradient(circle at bottom, rgba(250, 204, 21, 0.10), transparent 42%),
-          rgba(255,255,255,0.04);
-        border: 1px solid var(--border);
-        margin-bottom: 16px;
+        min-height: 360px;
+        padding: 10px 4px 6px;
       }
 
-      .reveal-empty {
-        min-height: 280px;
+      .reveal-card.flash-reveal {
+        animation: revealFlash 0.55s ease;
+      }
+
+      .reveal-empty,
+      .spin-reveal {
+        min-height: 320px;
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
         text-align: center;
-        color: var(--muted);
-        gap: 10px;
       }
 
-      .meme-wheel {
+      .reveal-empty {
+        gap: 10px;
+        color: var(--muted);
+      }
+
+      .spin-reveal {
         position: relative;
-        width: 92px;
-        height: 92px;
+        gap: 14px;
+      }
+
+      .spin-reveal::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(circle at center, rgba(250,204,21,0.09), transparent 26%),
+          radial-gradient(circle at center, rgba(34,211,238,0.06), transparent 38%);
+        filter: blur(8px);
+        animation: pulseField 1.8s linear infinite;
+        pointer-events: none;
+      }
+
+      .meme-wheel,
+      .spin-orb {
+        position: relative;
         border-radius: 50%;
         display: grid;
         place-items: center;
-        font-size: 2rem;
         background: conic-gradient(from 0deg, var(--yellow), var(--orange), var(--cyan), var(--purple), var(--yellow));
-        box-shadow: 0 0 28px rgba(250, 204, 21, 0.2);
+      }
+
+      .meme-wheel {
+        width: 96px;
+        height: 96px;
+        box-shadow: 0 0 22px rgba(250,204,21,0.15);
         animation: rotateGlow 9s linear infinite;
       }
 
-      .meme-wheel::after {
+      .spin-orb {
+        width: 126px;
+        height: 126px;
+        box-shadow:
+          0 0 24px rgba(250,204,21,0.18),
+          0 0 42px rgba(34,211,238,0.08);
+        animation: turboSpin 0.64s linear infinite;
+      }
+
+      .meme-wheel::after,
+      .spin-orb::after {
         content: "";
         position: absolute;
-        width: 74px;
-        height: 74px;
         border-radius: 50%;
-        background: #09111f;
+        background: #0a0a0a;
         border: 1px solid rgba(255,255,255,0.08);
       }
 
-      .meme-wheel span {
+      .meme-wheel::after {
+        width: 76px;
+        height: 76px;
+      }
+
+      .spin-orb::after {
+        width: 92px;
+        height: 92px;
+      }
+
+      .meme-wheel span,
+      .spin-orb span {
         position: relative;
         z-index: 1;
       }
@@ -253,166 +358,106 @@
       .reveal-empty h2,
       .coin-head h2 {
         margin: 0;
-        font-size: 1.8rem;
+        font-size: 1.95rem;
         text-transform: uppercase;
       }
 
-      .reveal-empty p {
+      .reveal-empty p,
+      .spin-sub {
         margin: 0;
-        max-width: 420px;
-        line-height: 1.6;
+        max-width: 520px;
+        line-height: 1.62;
       }
 
-      .coin-top {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        gap: 14px;
-        flex-wrap: wrap;
-      }
-
-      .coin-head {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-      }
-
-      .coin-head img {
-        width: 72px;
-        height: 72px;
-        border-radius: 20px;
-        object-fit: cover;
-        border: 1px solid var(--border);
-        background: rgba(255,255,255,0.05);
-      }
-
-      .coin-head p {
-        margin: 6px 0 0;
-        color: var(--muted);
-      }
-
-      .verdict {
-        padding: 10px 14px;
-        border-radius: 999px;
-        font-weight: 900;
-        text-transform: uppercase;
-        border: 1px solid var(--border);
-        background: linear-gradient(135deg, rgba(250, 204, 21, 0.16), rgba(34, 211, 238, 0.16));
-      }
-
-      .coin-copy {
-        margin: 16px 0 0;
-        color: #dbeafe;
-        line-height: 1.65;
-        background: rgba(255,255,255,0.04);
-        border: 1px solid var(--border);
-        border-radius: 18px;
-        padding: 14px;
-      }
-
-      .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
-        margin: 14px 0;
-      }
-
-      .stat {
-        border-radius: 18px;
-        padding: 13px;
-        background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
-        border: 1px solid var(--border);
-      }
-
-      .label {
-        color: var(--muted);
-        font-size: 0.78rem;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        margin-bottom: 6px;
-      }
-
-      .value {
-        font-size: 1rem;
-        font-weight: 800;
-        word-break: break-word;
-      }
-
-      .mini-meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 14px;
-      }
-
-      .tag {
-        padding: 9px 12px;
-        color: #dbeafe;
-        font-weight: 700;
-      }
-
-      .links {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        margin-top: 14px;
-      }
-
-      .links a,
-      .footer-links a,
-      .action-btn,
-      .share-float-btn,
-      .share-float-dismiss {
-        text-decoration: none;
-        color: white;
-        padding: 12px 14px;
-        border-radius: 999px;
-        border: 1px solid var(--border);
-        background: rgba(255,255,255,0.06);
-        font-weight: 800;
-      }
-
-      .control-box {
+      .spin-flash {
         position: relative;
         z-index: 1;
+        min-height: 1.1em;
+        font-size: clamp(2.2rem, 9vw, 4.1rem);
+        font-weight: 900;
+        line-height: 1;
+        letter-spacing: -0.06em;
+        text-transform: uppercase;
+        color: var(--yellow);
+        text-shadow:
+          0 0 12px rgba(250,204,21,0.18),
+          0 0 20px rgba(34,211,238,0.08);
+      }
+
+      .spin-sub {
+        position: relative;
+        z-index: 1;
+        color: #d1d5db;
+      }
+
+      .scan-pill-row {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      .scan-pill {
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        padding: 8px 12px;
+        background: rgba(255,255,255,0.025);
+        color: #e5e7eb;
+        font-weight: 800;
+        font-size: 0.83rem;
+      }
+
+      .control-zone {
+        padding: 8px 0 18px;
         display: grid;
         gap: 12px;
       }
 
       .spin-copy {
         text-align: center;
-        color: #dbeafe;
+        color: #d1d5db;
         line-height: 1.6;
-        font-size: 1rem;
-        margin: 2px 0 0;
+        margin: 0;
       }
 
       .spin-btn,
       .action-btn,
-      .share-float-btn,
-      .share-float-dismiss {
+      .cta-btn,
+      .cta-subtle {
         cursor: pointer;
-        transition: transform 0.15s ease, opacity 0.15s ease, box-shadow 0.15s ease;
+        transition: transform 0.16s ease, opacity 0.16s ease, border-color 0.16s ease;
       }
 
       .spin-btn:hover,
       .action-btn:hover,
-      .share-float-btn:hover,
-      .share-float-dismiss:hover { transform: translateY(-2px) scale(1.01); }
+      .cta-btn:hover,
+      .cta-subtle:hover {
+        transform: translateY(-2px);
+      }
 
       .spin-btn:disabled,
-      .action-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+      .action-btn:disabled,
+      .cta-btn:disabled,
+      .cta-subtle:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
 
       .spin-btn {
-        border: 0;
+        border: 1px solid rgba(250,204,21,0.28);
         border-radius: 999px;
         padding: 18px 24px;
+        background:
+          linear-gradient(135deg, rgba(250,204,21,0.95), rgba(255,183,3,0.95), rgba(34,211,238,0.92));
+        color: #0a0a0a;
         font-size: 1.08rem;
         font-weight: 900;
         letter-spacing: 0.02em;
-        background: linear-gradient(135deg, var(--yellow), #ffb703, var(--cyan));
-        color: #0b1020;
-        box-shadow: 0 14px 35px rgba(250, 204, 21, 0.24);
+        box-shadow:
+          0 10px 26px rgba(250,204,21,0.16),
+          inset 0 1px 0 rgba(255,255,255,0.25);
       }
 
       .action-row {
@@ -421,179 +466,292 @@
         gap: 12px;
       }
 
+      .action-btn {
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: rgba(255,255,255,0.03);
+        color: white;
+        padding: 12px 14px;
+        font-weight: 800;
+      }
+
       .status-box {
-        padding: 13px 14px;
-        border-radius: 16px;
-        background: rgba(255,255,255,0.05);
-        border: 1px solid var(--border);
-        color: #e2e8f0;
-        font-weight: 700;
         text-align: center;
+        color: #f3f4f6;
+        font-weight: 800;
+        padding: 13px 14px 2px;
       }
 
-      .footer-card {
-        margin-top: 18px;
+      .coin-panel {
+        animation: landIn 0.42s ease;
       }
 
-      .footer-inner {
+      .coin-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 14px;
+        flex-wrap: wrap;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .coin-head {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        min-width: 0;
+      }
+
+      .coin-logo-wrap {
         position: relative;
-        z-index: 1;
+        width: 82px;
+        height: 82px;
+        flex: 0 0 82px;
       }
 
-      .footer-inner h3 {
+      .coin-head img,
+      .coin-logo-fallback {
+        width: 82px;
+        height: 82px;
+        border-radius: 18px;
+        border: 1px solid var(--line-strong);
+        background: rgba(255,255,255,0.03);
+      }
+
+      .coin-head img {
+        display: block;
+        object-fit: cover;
+      }
+
+      .coin-logo-fallback {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 8px;
+        font-weight: 900;
+        font-size: 0.9rem;
+        line-height: 1.05;
+        color: #0a0a0a;
+        background: linear-gradient(135deg, var(--yellow), var(--orange), var(--cyan));
+      }
+
+      .coin-head p {
+        margin: 6px 0 0;
+        color: var(--muted);
+        font-weight: 700;
+      }
+
+      .verdict {
+        border-radius: 999px;
+        padding: 10px 14px;
+        border: 1px solid var(--line);
+        text-transform: uppercase;
+        font-weight: 900;
+        background: rgba(255,255,255,0.03);
+      }
+
+      .verdict.not-cooked {
+        color: #bbf7d0;
+        border-color: rgba(34,197,94,0.3);
+        background: rgba(34,197,94,0.12);
+      }
+
+      .verdict.kinda-cooked {
+        color: #fde68a;
+        border-color: rgba(250,204,21,0.26);
+        background: rgba(250,204,21,0.08);
+      }
+
+      .verdict.deeply-cooked {
+        color: #fecaca;
+        border-color: rgba(239,68,68,0.28);
+        background: rgba(239,68,68,0.1);
+      }
+
+      .coin-copy {
+        margin-top: 16px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--line);
+        color: #e5e7eb;
+        line-height: 1.7;
+      }
+
+      .roast-line {
+        margin-top: 10px;
+        color: #fde68a;
+        font-weight: 800;
+      }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0;
+        margin-top: 10px;
+        border-top: 1px solid var(--line);
+        border-left: 1px solid var(--line);
+      }
+
+      .stat {
+        min-width: 0;
+        padding: 14px;
+        border-right: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+        background: rgba(255,255,255,0.01);
+      }
+
+      .label {
+        margin-bottom: 6px;
+        color: var(--muted);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      .value {
+        font-size: 1rem;
+        font-weight: 900;
+        word-break: break-word;
+      }
+
+      .stat-change.positive .value {
+        color: #86efac;
+      }
+
+      .stat-change.negative .value {
+        color: #fca5a5;
+      }
+
+      .stat-change.neutral .value {
+        color: #e5e7eb;
+      }
+
+      .mini-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 16px;
+      }
+
+      .tag {
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        padding: 9px 12px;
+        background: rgba(255,255,255,0.025);
+        color: #e5e7eb;
+        font-weight: 800;
+      }
+
+      .cta-box {
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid var(--line);
+      }
+
+      .cta-box-title {
+        margin: 0 0 10px;
+        text-transform: uppercase;
+        font-size: 0.96rem;
+        letter-spacing: 0.04em;
+        font-weight: 900;
+        color: #fde68a;
+      }
+
+      .cta-row {
+        display: grid;
+        grid-template-columns: 1.2fr 1fr;
+        gap: 10px;
+      }
+
+      .cta-btn,
+      .cta-subtle {
+        border-radius: 999px;
+        padding: 14px 16px;
+        font-size: 0.98rem;
+        font-weight: 900;
+      }
+
+      .cta-btn {
+        border: 1px solid rgba(250,204,21,0.28);
+        background: linear-gradient(135deg, rgba(250,204,21,0.95), rgba(255,183,3,0.94), rgba(34,211,238,0.9));
+        color: #0a0a0a;
+      }
+
+      .cta-subtle {
+        border: 1px solid var(--line);
+        background: rgba(255,255,255,0.03);
+        color: white;
+      }
+
+      .links {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid var(--line);
+      }
+
+      .links a,
+      .footer-links a {
+        text-decoration: none;
+        color: white;
+        padding: 12px 14px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: rgba(255,255,255,0.03);
+        font-weight: 800;
+      }
+
+      .footer-zone {
+        padding-top: 18px;
+      }
+
+      .footer-head {
         margin: 0 0 12px;
         text-transform: uppercase;
       }
 
       .footer-grid {
         display: grid;
-        grid-template-columns: 1.25fr 0.75fr;
-        gap: 12px;
+        grid-template-columns: 1.2fr 0.8fr;
+        gap: 20px;
       }
 
-      .footer-box {
-        padding: 14px;
-        border-radius: 18px;
-        background: rgba(255,255,255,0.04);
-        border: 1px solid var(--border);
-      }
-
-      .footer-box strong {
+      .footer-section strong {
         display: block;
         margin-bottom: 8px;
       }
 
       .ca {
-        padding: 12px 14px;
-        border-radius: 14px;
-        background: rgba(255,255,255,0.05);
-        border: 1px dashed rgba(255,255,255,0.16);
-        word-break: break-word;
-        color: #dbeafe;
+        color: #f3f4f6;
+        font-weight: 900;
+        letter-spacing: 0.04em;
       }
 
       .footer-links {
         display: flex;
         gap: 10px;
         flex-wrap: wrap;
-        margin-top: 8px;
       }
 
       .footer-note {
+        margin-top: 22px;
         text-align: center;
         color: var(--muted);
         font-size: 0.92rem;
-        margin-top: 18px;
+        padding-top: 14px;
+        border-top: 1px solid var(--line);
       }
 
-      .share-float {
-        position: fixed;
-        right: 18px;
-        bottom: 18px;
-        z-index: 40;
-        width: min(360px, calc(100vw - 32px));
-        border-radius: 24px;
-        border: 1px solid var(--border);
-        background:
-          radial-gradient(circle at top, rgba(250, 204, 21, 0.18), transparent 35%),
-          radial-gradient(circle at bottom, rgba(34, 211, 238, 0.14), transparent 38%),
-          linear-gradient(180deg, rgba(16, 23, 42, 0.96), rgba(7, 10, 20, 0.98));
-        box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
-        padding: 18px;
-        backdrop-filter: blur(12px);
-        opacity: 0;
-        transform: translateY(20px);
-        pointer-events: none;
-        transition: opacity 0.22s ease, transform 0.22s ease;
-      }
+      @media (max-width: 760px) {
+        .stats-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
 
-      .share-float.open {
-        opacity: 1;
-        transform: translateY(0);
-        pointer-events: auto;
-      }
-
-      .share-float-head {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 10px;
-        margin-bottom: 10px;
-      }
-
-      .share-float-kicker {
-        display: inline-block;
-        padding: 7px 11px;
-        border-radius: 999px;
-        border: 1px solid var(--border);
-        background: rgba(255,255,255,0.06);
-        font-size: 0.76rem;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: var(--yellow);
-      }
-
-      .share-float-close {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        border: 1px solid var(--border);
-        background: rgba(255,255,255,0.06);
-        color: white;
-        cursor: pointer;
-        font-size: 1rem;
-      }
-
-      .share-float h3 {
-        margin: 0 0 8px;
-        font-size: 1.2rem;
-        line-height: 1.2;
-        text-transform: uppercase;
-      }
-
-      .share-float p {
-        margin: 0;
-        color: #dbeafe;
-        line-height: 1.55;
-        font-size: 0.95rem;
-      }
-
-      .share-float-coin {
-        margin: 14px 0;
-        padding: 12px 14px;
-        border-radius: 18px;
-        border: 1px solid var(--border);
-        background: rgba(255,255,255,0.05);
-      }
-
-      .share-float-coin strong {
-        display: block;
-        margin-bottom: 5px;
-        font-size: 1rem;
-      }
-
-      .share-float-actions {
-        display: grid;
-        gap: 10px;
-      }
-
-      .share-float-btn {
-        border: 0;
-        background: linear-gradient(135deg, var(--yellow), #ffb703, var(--cyan));
-        color: #09111f;
-        padding: 15px 16px;
-        font-size: 1rem;
-      }
-
-      .share-float-dismiss {
-        background: rgba(255,255,255,0.06);
-        color: white;
-      }
-
-      @media (max-width: 700px) {
-        .stats-grid,
         .action-row,
+        .cta-row,
         .footer-grid {
           grid-template-columns: 1fr;
         }
@@ -605,22 +763,33 @@
         .coin-head {
           align-items: flex-start;
         }
+      }
 
-        .share-float {
-          right: 10px;
-          left: 10px;
-          bottom: 10px;
-          width: auto;
-          border-radius: 20px;
+      @media (max-width: 540px) {
+        .stats-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .inner {
+          padding: 14px;
+        }
+
+        .reveal-card {
+          min-height: 330px;
         }
       }
 
       @keyframes pulse {
         0%, 100% { transform: scale(1); opacity: 1; }
-        50% { transform: scale(1.15); opacity: 0.7; }
+        50% { transform: scale(1.14); opacity: 0.72; }
       }
 
       @keyframes slide {
+        from { transform: translateX(0); }
+        to { transform: translateX(-50%); }
+      }
+
+      @keyframes warningSlide {
         from { transform: translateX(0); }
         to { transform: translateX(-50%); }
       }
@@ -629,104 +798,147 @@
         from { transform: rotate(0deg); }
         to { transform: rotate(360deg); }
       }
+
+      @keyframes turboSpin {
+        from { transform: rotate(0deg) scale(1); }
+        50% { transform: rotate(180deg) scale(1.06); }
+        to { transform: rotate(360deg) scale(1); }
+      }
+
+      @keyframes pulseField {
+        from { transform: scale(0.96); opacity: 0.72; }
+        50% { transform: scale(1.04); opacity: 1; }
+        to { transform: scale(0.96); opacity: 0.72; }
+      }
+
+      @keyframes landIn {
+        0% {
+          opacity: 0;
+          transform: translateY(18px) scale(0.98);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      @keyframes revealFlash {
+        0% { box-shadow: inset 0 0 0 rgba(255,255,255,0); }
+        30% { box-shadow: inset 0 0 120px rgba(250,204,21,0.06); }
+        100% { box-shadow: inset 0 0 0 rgba(255,255,255,0); }
+      }
     </style>
   </head>
   <body>
     <div class="noise"></div>
     <div class="grid-bg"></div>
-    <div class="glow"></div>
 
     <div class="wrap">
-      <div class="topbar">
-        <div class="token-badge">Make Solana Fun <span>$AGAIN</span></div>
-        <div class="live-pill"><span class="live-dot"></span>Live Solana degen feed</div>
-      </div>
-
-      <section class="hero">
-        <h1>
-          Chat, am I cooked<br />
-          <span class="again">$AGAIN</span> ?
-        </h1>
-        <p class="sub">
-          Spin the degen wheel. Pull a random Solana coin. Farm dopamine. Shill the result on X.
-        </p>
-      </section>
-
-      <div class="ticker-strip">
-        <div class="ticker-track">
-          <div class="ticker-item">⚡ Spin random Solana coins</div>
-          <div class="ticker-item">🔥 Make Solana Fun <span>$AGAIN</span></div>
-          <div class="ticker-item">🧠 Stop pretending you know</div>
-          <div class="ticker-item">🚀 Zero backend. Pure degen energy.</div>
-          <div class="ticker-item">💸 Dopamine &gt; discipline</div>
-          <div class="ticker-item">🌙 Wen conviction?</div>
-          <div class="ticker-item">⚡ Spin random Solana coins</div>
-          <div class="ticker-item">🔥 Make Solana Fun <span>$AGAIN</span></div>
-          <div class="ticker-item">🧠 Stop pretending you know</div>
-          <div class="ticker-item">🚀 Zero backend. Pure degen energy.</div>
-          <div class="ticker-item">💸 Dopamine &gt; discipline</div>
-          <div class="ticker-item">🌙 Wen conviction?</div>
-        </div>
-      </div>
-
-      <section class="main-card">
-        <div id="result" class="reveal-card">
-          <div class="reveal-empty">
-            <div class="meme-wheel"><span>🎰</span></div>
-            <h2>Stop pretending that you know.</h2>
-            <p>Spare yourself 5h in the trenches, just buy random :D</p>
+      <div class="site-shell">
+        <div class="warning-strip">
+          <div class="warning-track">
+            <div class="warning-item">⚠ Degen zone — do not cross with full size</div>
+            <div class="warning-item">⚠ Unlicensed conviction dispenser</div>
+            <div class="warning-item">⚠ Random Solana life decisions ahead</div>
+            <div class="warning-item">⚠ CT will pretend they knew first</div>
+            <div class="warning-item">⚠ Degen zone — do not cross with full size</div>
+            <div class="warning-item">⚠ Unlicensed conviction dispenser</div>
+            <div class="warning-item">⚠ Random Solana life decisions ahead</div>
+            <div class="warning-item">⚠ CT will pretend they knew first</div>
           </div>
         </div>
 
-        <div class="control-box">
-          <p class="spin-copy">One window. One spin. One random Solana life decision.</p>
-          <button id="spinBtn" class="spin-btn">🎰 Spin $AGAIN</button>
-
-          <div class="action-row">
-            <button id="shareBtn" class="action-btn" disabled>Share on X</button>
-            <button id="copyBtn" class="action-btn" disabled>Copy shill text</button>
-          </div>
-
-          <div class="status-box" id="statusText">Ready to spin. Pure irresponsible optimism is online.</div>
-        </div>
-      </section>
-
-      <section class="footer-card">
-        <div class="footer-inner">
-          <h3>$AGAIN links</h3>
-          <div class="footer-grid">
-            <div class="footer-box">
-              <strong>Contract address</strong>
-              <div class="ca">7MPZhoJMheby5wbTwHnFVLNz7aknnEyShbNQb86Ypump</div>
+        <div class="inner">
+          <div class="topbar">
+            <div class="top-left">
+              <div class="token-badge">Make Solana Fun <span>$AGAIN</span></div>
+              <div class="live-pill"><span class="live-dot"></span>Live Solana degen feed</div>
             </div>
-            <div class="footer-box">
-              <strong>Bagholder visibility pack</strong>
-              <div class="footer-links">
-                <a href="https://x.com/Again179966" target="_blank" rel="noreferrer">X Profile</a>
-                <a href="https://t.me/get_rekt_again" target="_blank" rel="noreferrer">Telegram</a>
+            <div class="top-right">
+              <div class="micro-pill">🎰 Zero research</div>
+              <div class="micro-pill">🔥 Maximum vibes</div>
+            </div>
+          </div>
+
+          <section class="hero">
+            <h1>
+              Chat, am I cooked<br />
+              <span class="again">$AGAIN</span> ?
+            </h1>
+            <p class="sub">
+              Spin the degen wheel. Pull a random Solana coin. Farm dopamine. Publicly expose your conviction.
+            </p>
+            <div class="hero-kickers">
+              <div class="hero-kicker">🧠 Stop pretending you know</div>
+              <div class="hero-kicker">💸 Dopamine &gt; discipline</div>
+              <div class="hero-kicker">🌙 Holy shit spin again</div>
+            </div>
+          </section>
+
+          <div class="ticker-strip">
+            <div class="ticker-track">
+              <div class="ticker-item">⚡ Random Solana life decisions</div>
+              <div class="ticker-item">🔥 Make Solana Fun <span>$AGAIN</span></div>
+              <div class="ticker-item">🧠 Stop pretending you know</div>
+              <div class="ticker-item">🚀 Pure degen energy</div>
+              <div class="ticker-item">💸 Dopamine &gt; discipline</div>
+              <div class="ticker-item">🪦 Wallet-risk entertainment</div>
+              <div class="ticker-item">🌙 Wen conviction?</div>
+              <div class="ticker-item">⚡ Random Solana life decisions</div>
+              <div class="ticker-item">🔥 Make Solana Fun <span>$AGAIN</span></div>
+              <div class="ticker-item">🧠 Stop pretending you know</div>
+              <div class="ticker-item">🚀 Pure degen energy</div>
+              <div class="ticker-item">💸 Dopamine &gt; discipline</div>
+              <div class="ticker-item">🪦 Wallet-risk entertainment</div>
+              <div class="ticker-item">🌙 Wen conviction?</div>
+            </div>
+          </div>
+
+          <section class="main-zone">
+            <div class="reveal-wrap">
+              <div id="result" class="reveal-card">
+                <div class="reveal-empty">
+                  <div class="meme-wheel"><span>🎰</span></div>
+                  <h2>STOP pretending that you know</h2>
+                  <p>Skip 5 hours of trench archaeology. Let chaos assign your next Solana obsession.</p>
+                </div>
               </div>
             </div>
-          </div>
+
+            <div class="control-zone">
+              <p class="spin-copy">One spin. One random coin. One completely unnecessary amount of confidence.</p>
+              <button id="spinBtn" class="spin-btn">🎰 Spin $AGAIN</button>
+
+              <div class="action-row">
+                <button id="shareBtn" class="action-btn" disabled>Share on X</button>
+                <button id="copyBtn" class="action-btn" disabled>Copy shill text</button>
+              </div>
+
+              <div class="status-box" id="statusText">Ready to spin. Pure irresponsible optimism is online.</div>
+            </div>
+          </section>
+
+          <section class="footer-zone">
+            <h3 class="footer-head">$AGAIN links</h3>
+            <div class="footer-grid">
+              <div class="footer-section">
+                <strong>Contract address</strong>
+                <div class="ca">COMING SOON</div>
+              </div>
+              <div class="footer-section">
+                <strong>Bagholder visibility pack</strong>
+                <div class="footer-links">
+                  <a href="https://x.com/Again179966" target="_blank" rel="noreferrer">X Profile</a>
+                  <a href="https://t.me/get_rekt_again" target="_blank" rel="noreferrer">Telegram</a>
+                </div>
+              </div>
+            </div>
+
+            <p class="footer-note">
+              This is meme-grade data for entertainment. Not financial advice. Definitely not emotional advice.
+            </p>
+          </section>
         </div>
-      </section>
-
-      <p class="footer-note">This is meme-grade data for entertainment. Not financial advice. Definitely not emotional advice.</p>
-    </div>
-
-    <div id="shareFloat" class="share-float" aria-hidden="true">
-      <div class="share-float-head">
-        <div class="share-float-kicker">Fresh degen find</div>
-        <button id="shareFloatClose" class="share-float-close" aria-label="Close">✕</button>
-      </div>
-      <h3>Post before CT pretends they knew first</h3>
-      <p>You found a random Solana coin. Time to expose your conviction publicly.</p>
-      <div id="shareFloatCoin" class="share-float-coin">
-        <strong>No coin yet</strong>
-        <span>Spin first, then flex.</span>
-      </div>
-      <div class="share-float-actions">
-        <button id="shareFloatBtn" class="share-float-btn">Post your degen find on X</button>
-        <button id="shareFloatDismiss" class="share-float-dismiss">Later</button>
       </div>
     </div>
 
@@ -736,14 +948,55 @@
       const copyBtn = document.getElementById('copyBtn');
       const result = document.getElementById('result');
       const statusText = document.getElementById('statusText');
-      const shareFloat = document.getElementById('shareFloat');
-      const shareFloatCoin = document.getElementById('shareFloatCoin');
-      const shareFloatBtn = document.getElementById('shareFloatBtn');
-      const shareFloatDismiss = document.getElementById('shareFloatDismiss');
-      const shareFloatClose = document.getElementById('shareFloatClose');
 
       let currentCoin = null;
-      let shareFloatTimer = null;
+      let audioCtx = null;
+      let revealTickerInterval = null;
+      let revealStatusInterval = null;
+      let spinSoundInterval = null;
+      let isSpinning = false;
+
+      const fakeTickers = [
+        '$BONK', '$WIF', '$POPCAT', '$PNUT', '$GOAT', '$FART',
+        '$GIGA', '$MICHI', '$REKT', '$COPE', '$SENDIT', '$MOOD',
+        '$APE', '$CRASH', '$BAG', '$YOLO', '$RUG?', '$MOON?',
+        '$HOLD?', '$NGMI', '$WAGMI', '$COOKED', '$PUMP', '$DUST'
+      ];
+
+      const funnyStatuses = [
+        'Consulting the trench gods...',
+        'Scanning Solana for your next bad decision...',
+        'Routing toward maximum dopamine...',
+        'Measuring cooked probability...',
+        'Checking CT delusion levels...',
+        'Searching for spiritually risky upside...',
+        'Injecting random conviction...',
+        'Locating a coin your cousin would ape...',
+        'Calculating emotional damage...',
+        'Harvesting chaos from boosted tokens...'
+      ];
+
+      const roastLines = [
+        'This one could do a 20x or send you directly into character development.',
+        'Freshly extracted from the trenches. Smells like conviction.',
+        'This chart might print. Or spiritually reorganize your portfolio.',
+        'You did not choose this coin. Destiny and bad habits did.',
+        'CT will now pretend they knew this one 4 days ago.',
+        'Somewhere, a cousin is already aping this with too much size.',
+        'This asset has the exact energy of a very bad but very fun decision.',
+        'Not saying ape it. Just saying your timeline would absolutely love the post.'
+      ];
+
+      const degenBadges = [
+        '🧠 Brainrot approved',
+        '💥 Chart criminal',
+        '🪤 Exit liquidity candidate',
+        '🚨 Cousin apes this',
+        '🎯 Conviction assigned',
+        '🍌 Attention hijacker',
+        '⚰️ Wallet danger aura',
+        '🧪 Trench scientist bait'
+      ];
 
       function formatMoney(value) {
         if (value === null || value === undefined || Number.isNaN(Number(value))) return 'N/A';
@@ -786,7 +1039,6 @@
         if (change === null || change === undefined || Number.isNaN(Number(change))) {
           return 'Unknown levels of cooked';
         }
-
         const num = Number(change);
         if (num > 120) return 'Turbo sent. Peak degen euphoria.';
         if (num > 40) return 'Suspiciously cooking upward.';
@@ -804,6 +1056,21 @@
         return 'DEEPLY COOKED';
       }
 
+      function getVerdictClass(verdict) {
+        if (verdict === 'NOT COOKED') return 'not-cooked';
+        if (verdict === 'KINDA COOKED') return 'kinda-cooked';
+        if (verdict === 'DEEPLY COOKED') return 'deeply-cooked';
+        return '';
+      }
+
+      function getChangeClass(change) {
+        const num = Number(change);
+        if (Number.isNaN(num)) return 'neutral';
+        if (num > 0) return 'positive';
+        if (num < 0) return 'negative';
+        return 'neutral';
+      }
+
       function getDegenScore(liquidity, volume, change) {
         const liq = Number(liquidity) || 0;
         const vol = Number(volume) || 0;
@@ -812,121 +1079,270 @@
         return raw < 12 ? 12 : raw;
       }
 
+      function escapeHtml(value) {
+        return String(value ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function randomFrom(list) {
+        return list[Math.floor(Math.random() * list.length)];
+      }
+
       function buildShillText() {
         if (!currentCoin) return '';
-
         return `Chat am I cooked $AGAIN ? :D\n\n` +
-          `I just spun ${currentCoin.name} ($${currentCoin.symbol}) on Solana.\n` +
+          `Holy shit I just spun ${currentCoin.name} $${currentCoin.symbol} on Solana.\n` +
+          `Ticker view: ( $${currentCoin.symbol} )\n` +
+          `Verdict: ${currentCoin.verdict}\n` +
           `Price: ${currentCoin.priceUsd ? `$${Number(currentCoin.priceUsd).toFixed(8)}` : 'N/A'}\n` +
           `MCap: ${formatMoney(currentCoin.marketCap)}\n` +
           `24h: ${formatPercent(currentCoin.priceChange24h)}\n` +
-          `Cooked meter: ${currentCoin.cookedRating}\n\n` +
+          `Cooked meter: ${currentCoin.cookedRating}\n` +
+          `Degen score: ${currentCoin.degenScore}/99\n\n` +
           `Token: ${currentCoin.tokenAddress}`;
       }
 
-      function hideShareFloat() {
-        if (shareFloatTimer) {
-          clearTimeout(shareFloatTimer);
-          shareFloatTimer = null;
+      function ensureAudio() {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         }
-        shareFloat.classList.remove('open');
-        shareFloat.setAttribute('aria-hidden', 'true');
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
       }
 
-      function showShareFloat() {
-        if (!currentCoin) return;
-        shareFloatCoin.innerHTML = `
-          <strong>${currentCoin.name} ($${currentCoin.symbol})</strong>
-          <span>${currentCoin.verdict} · ${formatPercent(currentCoin.priceChange24h)} in 24h</span>
+      function playTone(freq = 440, duration = 0.08, type = 'sine', volume = 0.03, startTime = 0) {
+        if (!audioCtx) return;
+        const now = audioCtx.currentTime + startTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, now);
+
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(volume, now + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start(now);
+        osc.stop(now + duration + 0.02);
+      }
+
+      function playSpinStartSound() {
+        ensureAudio();
+        playTone(320, 0.06, 'triangle', 0.018, 0);
+        playTone(430, 0.06, 'triangle', 0.021, 0.07);
+        playTone(620, 0.08, 'triangle', 0.023, 0.14);
+      }
+
+      function startSpinLoopSound() {
+        ensureAudio();
+        stopSpinLoopSound();
+
+        spinSoundInterval = setInterval(() => {
+          const base = 240 + Math.random() * 70;
+          playTone(base, 0.04, 'square', 0.009, 0);
+          playTone(base + 90, 0.035, 'triangle', 0.006, 0.03);
+        }, 150);
+      }
+
+      function stopSpinLoopSound() {
+        if (spinSoundInterval) {
+          clearInterval(spinSoundInterval);
+          spinSoundInterval = null;
+        }
+      }
+
+      function playRevealSound() {
+        ensureAudio();
+        playTone(520, 0.08, 'sine', 0.025, 0);
+        playTone(780, 0.12, 'sine', 0.03, 0.08);
+        playTone(1040, 0.18, 'sine', 0.032, 0.18);
+      }
+
+      function stopRevealAnimation() {
+        if (revealTickerInterval) {
+          clearInterval(revealTickerInterval);
+          revealTickerInterval = null;
+        }
+        if (revealStatusInterval) {
+          clearInterval(revealStatusInterval);
+          revealStatusInterval = null;
+        }
+        stopSpinLoopSound();
+      }
+
+      function renderSpinState() {
+        result.classList.remove('flash-reveal');
+        result.innerHTML = `
+          <div class="spin-reveal">
+            <div class="spin-orb"><span>🌀</span></div>
+            <div id="spinFlash" class="spin-flash">$AGAIN</div>
+            <p id="spinSub" class="spin-sub">Consulting the trench gods...</p>
+            <div class="scan-pill-row">
+              <div class="scan-pill">Live boosted Solana chaos</div>
+              <div class="scan-pill">Dopamine loading</div>
+              <div class="scan-pill">Conviction not included</div>
+            </div>
+          </div>
         `;
-        shareFloat.classList.add('open');
-        shareFloat.setAttribute('aria-hidden', 'false');
+
+        const spinFlash = document.getElementById('spinFlash');
+        const spinSub = document.getElementById('spinSub');
+
+        let tickerIndex = 0;
+        let statusIndex = 0;
+
+        spinFlash.textContent = fakeTickers[0];
+        spinSub.textContent = funnyStatuses[0];
+
+        revealTickerInterval = setInterval(() => {
+          tickerIndex = (tickerIndex + 1) % fakeTickers.length;
+          spinFlash.textContent = fakeTickers[tickerIndex];
+        }, 110);
+
+        revealStatusInterval = setInterval(() => {
+          statusIndex = (statusIndex + 1) % funnyStatuses.length;
+          spinSub.textContent = funnyStatuses[statusIndex];
+          statusText.textContent = funnyStatuses[statusIndex];
+        }, 620);
+
+        startSpinLoopSound();
       }
 
-      function scheduleShareFloat() {
-        hideShareFloat();
-        shareFloatTimer = setTimeout(() => {
-          showShareFloat();
-          shareFloatTimer = null;
-        }, 3000);
+      function handleCoinImageError(img) {
+        const wrap = img.closest('.coin-logo-wrap');
+        if (!wrap) return;
+        img.style.display = 'none';
+        const fallback = wrap.querySelector('.coin-logo-fallback');
+        if (fallback) fallback.style.display = 'flex';
+      }
+
+      function attachRevealActions() {
+        const revealShareBtn = document.getElementById('revealShareBtn');
+        const revealCopyBtn = document.getElementById('revealCopyBtn');
+
+        if (revealShareBtn) revealShareBtn.addEventListener('click', shareOnX);
+        if (revealCopyBtn) revealCopyBtn.addEventListener('click', copyShillText);
+
+        document.querySelectorAll('.coin-logo').forEach(img => {
+          img.addEventListener('error', () => handleCoinImageError(img));
+          if (img.complete && img.naturalWidth === 0) {
+            handleCoinImageError(img);
+          }
+        });
       }
 
       function renderCoin(coin) {
+        const roastLine = randomFrom(roastLines);
+        const bonusBadge = randomFrom(degenBadges);
+        const verdictClass = getVerdictClass(coin.verdict);
+        const changeClass = getChangeClass(coin.priceChange24h);
+
         const linksHtml = (coin.links || []).slice(0, 4).map(link => {
           const label = normalizeLinkLabel(link.type, link.label);
-          return `<a href="${link.url}" target="_blank" rel="noreferrer">${label}</a>`;
+          return `<a href="${escapeHtml(link.url)}" target="_blank" rel="noreferrer">${escapeHtml(label)}</a>`;
         }).join('');
 
+        result.classList.add('flash-reveal');
         result.innerHTML = `
-          <div class="coin-top">
-            <div class="coin-head">
-              <img src="${coin.icon || 'https://placehold.co/80x80?text=%F0%9F%AA%99'}" alt="${coin.name} logo" />
-              <div>
-                <h2>${coin.name || 'Unknown coin'}</h2>
-                <p>$${coin.symbol || '???'} · ${coin.dexId || 'Unknown DEX'}</p>
+          <div class="coin-panel">
+            <div class="coin-top">
+              <div class="coin-head">
+                <div class="coin-logo-wrap">
+                  <img
+                    class="coin-logo"
+                    src="${escapeHtml(coin.icon || '')}"
+                    alt="${escapeHtml(coin.name)} logo"
+                  />
+                  <div class="coin-logo-fallback">LOGO<br>RUGGED</div>
+                </div>
+                <div>
+                  <h2>${escapeHtml(coin.name || 'Unknown coin')}</h2>
+                  <p>( $${escapeHtml(coin.symbol || '???')} ) · ${escapeHtml(coin.dexId || 'Unknown DEX')}</p>
+                </div>
+              </div>
+              <div class="verdict ${verdictClass}">${escapeHtml(coin.verdict)}</div>
+            </div>
+
+            <div class="coin-copy">
+              <strong>Cooked meter:</strong> ${escapeHtml(coin.cookedRating)}<br /><br />
+              ${escapeHtml(coin.description || 'No spicy description found. This one is either ultra early or operating fully on vibes.')}
+              <div class="roast-line">${escapeHtml(roastLine)}</div>
+            </div>
+
+            <div class="stats-grid">
+              <div class="stat">
+                <div class="label">Price</div>
+                <div class="value">${coin.priceUsd ? `$${Number(coin.priceUsd).toFixed(8)}` : 'N/A'}</div>
+              </div>
+              <div class="stat">
+                <div class="label">Market cap</div>
+                <div class="value">${formatMoney(coin.marketCap)}</div>
+              </div>
+              <div class="stat">
+                <div class="label">24h volume</div>
+                <div class="value">${formatMoney(coin.volume24h)}</div>
+              </div>
+              <div class="stat stat-change ${changeClass}">
+                <div class="label">24h change</div>
+                <div class="value">${formatPercent(coin.priceChange24h)}</div>
+              </div>
+              <div class="stat">
+                <div class="label">Liquidity</div>
+                <div class="value">${formatMoney(coin.liquidityUsd)}</div>
+              </div>
+              <div class="stat">
+                <div class="label">Address</div>
+                <div class="value">${shortenAddress(coin.tokenAddress)}</div>
               </div>
             </div>
-            <div class="verdict">${coin.verdict}</div>
-          </div>
 
-          <div class="coin-copy">
-            <strong>Cooked meter:</strong> ${coin.cookedRating}<br /><br />
-            ${coin.description || 'No spicy description found. This one is either ultra early or operating fully on vibes.'}
-          </div>
+            <div class="mini-meta">
+              <div class="tag">⚡ Degen score: ${escapeHtml(coin.degenScore)}/99</div>
+              <div class="tag">🎲 Randomness won again</div>
+              <div class="tag">${escapeHtml(bonusBadge)}</div>
+            </div>
 
-          <div class="stats-grid">
-            <div class="stat">
-              <div class="label">Price</div>
-              <div class="value">${coin.priceUsd ? `$${Number(coin.priceUsd).toFixed(8)}` : 'N/A'}</div>
+            <div class="cta-box">
+              <div class="cta-box-title">Expose your conviction</div>
+              <div class="cta-row">
+                <button id="revealShareBtn" class="cta-btn">Share on X</button>
+                <button id="revealCopyBtn" class="cta-subtle">Copy shill text</button>
+              </div>
             </div>
-            <div class="stat">
-              <div class="label">Market cap</div>
-              <div class="value">${formatMoney(coin.marketCap)}</div>
-            </div>
-            <div class="stat">
-              <div class="label">24h volume</div>
-              <div class="value">${formatMoney(coin.volume24h)}</div>
-            </div>
-            <div class="stat">
-              <div class="label">24h change</div>
-              <div class="value">${formatPercent(coin.priceChange24h)}</div>
-            </div>
-            <div class="stat">
-              <div class="label">Liquidity</div>
-              <div class="value">${formatMoney(coin.liquidityUsd)}</div>
-            </div>
-            <div class="stat">
-              <div class="label">Address</div>
-              <div class="value">${shortenAddress(coin.tokenAddress)}</div>
-            </div>
-          </div>
 
-          <div class="mini-meta">
-            <div class="tag">⚡ Degen score: ${coin.degenScore}/99</div>
-            <div class="tag">🎲 Randomness won again</div>
-          </div>
-
-          <div class="links">
-            ${coin.dexUrl ? `<a href="${coin.dexUrl}" target="_blank" rel="noreferrer">DEX Screener</a>` : ''}
-            ${linksHtml}
+            <div class="links">
+              ${coin.dexUrl ? `<a href="${escapeHtml(coin.dexUrl)}" target="_blank" rel="noreferrer">DEX Screener</a>` : ''}
+              ${linksHtml}
+            </div>
           </div>
         `;
+
+        attachRevealActions();
       }
 
       async function fetchRandomCoin() {
-        hideShareFloat();
-        statusText.textContent = 'Cooking... scanning Solana for your next bad decision.';
+        if (isSpinning) return;
+
+        isSpinning = true;
+        currentCoin = null;
+        stopRevealAnimation();
+
         spinBtn.disabled = true;
         shareBtn.disabled = true;
         copyBtn.disabled = true;
 
-        result.innerHTML = `
-          <div class="reveal-empty">
-            <div class="meme-wheel"><span>🌀</span></div>
-            <h2>Stop pretending that you know.</h2>
-            <p>Spare yourself 5h in the trenches, just buy random :D</p>
-          </div>
-        `;
+        playSpinStartSound();
+        renderSpinState();
+        statusText.textContent = 'Consulting the trench gods...';
 
         try {
           const boostsResponse = await fetch('https://api.dexscreener.com/token-boosts/latest/v1');
@@ -945,11 +1361,13 @@
           const bestPair = pickBestPair(pairs);
           if (!bestPair) throw new Error('No pair data found for this token.');
 
+          await new Promise(resolve => setTimeout(resolve, 1650));
+
           currentCoin = {
             name: bestPair.baseToken?.name || 'Unknown',
             symbol: bestPair.baseToken?.symbol || '???',
             tokenAddress: randomBoost.tokenAddress,
-            icon: randomBoost.icon,
+            icon: randomBoost.icon || bestPair.info?.imageUrl || '',
             description: randomBoost.description,
             links: randomBoost.links || bestPair.info?.socials || [],
             dexId: bestPair.dexId,
@@ -964,16 +1382,27 @@
             degenScore: getDegenScore(bestPair.liquidity?.usd, bestPair.volume?.h24, bestPair.priceChange?.h24)
           };
 
+          stopRevealAnimation();
+          playRevealSound();
           renderCoin(currentCoin);
-          statusText.textContent = `${currentCoin.name} ($${currentCoin.symbol}) just dropped on your screen. ${currentCoin.cookedRating}`;
+
+          statusText.textContent = `${currentCoin.name} ( $${currentCoin.symbol} ) just landed. ${currentCoin.cookedRating}`;
           shareBtn.disabled = false;
           copyBtn.disabled = false;
-          scheduleShareFloat();
         } catch (error) {
-          result.innerHTML = `<div class="reveal-empty"><div class="meme-wheel"><span>💥</span></div><h2>Temporary emotional liquidation</h2><p>${error.message} Hit spin again.</p></div>`;
+          stopRevealAnimation();
+          result.classList.remove('flash-reveal');
+          result.innerHTML = `
+            <div class="reveal-empty">
+              <div class="meme-wheel"><span>💥</span></div>
+              <h2>Temporary emotional liquidation</h2>
+              <p>${escapeHtml(error.message)} Hit spin again.</p>
+            </div>
+          `;
           statusText.textContent = 'Temporary emotional liquidation. Try again.';
         } finally {
           spinBtn.disabled = false;
+          isSpinning = false;
         }
       }
 
@@ -999,9 +1428,6 @@
       spinBtn.addEventListener('click', fetchRandomCoin);
       shareBtn.addEventListener('click', shareOnX);
       copyBtn.addEventListener('click', copyShillText);
-      shareFloatBtn.addEventListener('click', shareOnX);
-      shareFloatDismiss.addEventListener('click', hideShareFloat);
-      shareFloatClose.addEventListener('click', hideShareFloat);
     </script>
   </body>
 </html>
