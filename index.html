@@ -584,6 +584,12 @@
         font-weight: 800;
       }
 
+      .risk-reasons {
+        margin-top: 10px;
+        color: #fca5a5;
+        font-weight: 800;
+      }
+
       .stats-grid {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -894,7 +900,7 @@
             </div>
           </div>
 
-          <section class="main-zone">
+          <section class="main-zone" id="spinZone">
             <div class="reveal-wrap">
               <div id="result" class="reveal-card">
                 <div class="reveal-empty">
@@ -943,11 +949,14 @@
     </div>
 
     <script>
+      const WORKER_URL = 'https://hidden-breeze-2ff7.stealth-dev-0x.workers.dev/api/random-token';
+
       const spinBtn = document.getElementById('spinBtn');
       const shareBtn = document.getElementById('shareBtn');
       const copyBtn = document.getElementById('copyBtn');
       const result = document.getElementById('result');
       const statusText = document.getElementById('statusText');
+      const spinZone = document.getElementById('spinZone');
 
       let currentCoin = null;
       let audioCtx = null;
@@ -965,7 +974,7 @@
 
       const funnyStatuses = [
         'Consulting the trench gods...',
-        'Scanning Solana for your next bad decision...',
+        'Scanning Jupiter cache for your next bad decision...',
         'Routing toward maximum dopamine...',
         'Measuring cooked probability...',
         'Checking CT delusion levels...',
@@ -973,18 +982,39 @@
         'Injecting random conviction...',
         'Locating a coin your cousin would ape...',
         'Calculating emotional damage...',
-        'Harvesting chaos from boosted tokens...'
+        'Harvesting chaos from cached Solana tokens...'
       ];
 
-      const roastLines = [
-        'This one could do a 20x or send you directly into character development.',
-        'Freshly extracted from the trenches. Smells like conviction.',
-        'This chart might print. Or spiritually reorganize your portfolio.',
-        'You did not choose this coin. Destiny and bad habits did.',
-        'CT will now pretend they knew this one 4 days ago.',
-        'Somewhere, a cousin is already aping this with too much size.',
+      const lowSketchRoasts = [
+        'Smells weirdly respectable. Suspicious.',
+        'This one has less criminal aura than usual.',
+        'Shockingly calm for something born in the trenches.',
+        'This chart is behaving almost too normally.',
+        'Not saying it is clean. Just less cursed.'
+      ];
+
+      const susRoasts = [
+        'Still trenchy, just wearing cleaner shoes.',
+        'Some sus energy, but not full wallet assassination.',
+        'This one might be lying politely.',
+        'A little cursed, a little charming.',
+        'Would not trust it with my lunch money, but I would stare at the chart.'
+      ];
+
+      const sketchyRoasts = [
+        'Freshly extracted from the trenches. Smells like conviction and poor judgment.',
         'This asset has the exact energy of a very bad but very fun decision.',
-        'Not saying ape it. Just saying your timeline would absolutely love the post.'
+        'Somewhere, a cousin is already aping this with too much size.',
+        'CT will now pretend they knew this one 4 days ago.',
+        'This chart might print. Or spiritually reorganize your portfolio.'
+      ];
+
+      const criminalRoasts = [
+        'This thing radiates unlicensed financial warfare.',
+        'Chart looks like it escaped a crime scene.',
+        'The vibes are not immaculate. The vibes are armed.',
+        'This one could 20x or immediately qualify as evidence.',
+        'You did not find a coin. The coin found fresh exit liquidity.'
       ];
 
       const degenBadges = [
@@ -1024,15 +1054,6 @@
         if (type === 'telegram') return 'Telegram';
         if (type === 'website') return 'Website';
         return fallback || type || 'Link';
-      }
-
-      function pickBestPair(pairs = []) {
-        if (!pairs.length) return null;
-        return [...pairs].sort((a, b) => {
-          const aLiq = a?.liquidity?.usd || 0;
-          const bLiq = b?.liquidity?.usd || 0;
-          return bLiq - aLiq;
-        })[0];
       }
 
       function getCookedRating(change) {
@@ -1092,15 +1113,57 @@
         return list[Math.floor(Math.random() * list.length)];
       }
 
+      function getSketchyRoast(label) {
+        if (label === 'CALM') return randomFrom(lowSketchRoasts);
+        if (label === 'SUS') return randomFrom(susRoasts);
+        if (label === 'SKETCHY') return randomFrom(sketchyRoasts);
+        if (label === 'CRIMINAL') return randomFrom(criminalRoasts);
+        return randomFrom(sketchyRoasts);
+      }
+
+      function buildDescription(coin) {
+        const bits = [];
+
+        if (coin.isVerified) {
+          bits.push('Verified on Jupiter.');
+        } else {
+          bits.push('Unverified trench artifact. Respect the chaos.');
+        }
+
+        if (coin.organicScoreLabel) {
+          bits.push(`Organic aura looks ${coin.organicScoreLabel}.`);
+        } else if (coin.organicScore !== null && coin.organicScore !== undefined) {
+          bits.push(`Organic score: ${Number(coin.organicScore).toFixed(1)}.`);
+        }
+
+        if (coin.holderCount) {
+          bits.push(`Holder cult count: ${Number(coin.holderCount).toLocaleString()}.`);
+        }
+
+        if (coin.sketchyLabel) {
+          bits.push(`Sketchy Meter says ${coin.sketchyLabel.toLowerCase()}.`);
+        }
+
+        if (coin.cacheAgeSeconds !== null && coin.cacheAgeSeconds !== undefined) {
+          bits.push(`Served from chaos cache ${coin.cacheAgeSeconds}s ago.`);
+        }
+
+        return bits.join(' ');
+      }
+
       function buildShillText() {
         if (!currentCoin) return '';
         return `Chat am I cooked $AGAIN ? :D\n\n` +
           `Holy shit I just spun ${currentCoin.name} $${currentCoin.symbol} on Solana.\n` +
           `Ticker view: ( $${currentCoin.symbol} )\n` +
           `Verdict: ${currentCoin.verdict}\n` +
+          `Sketchy Meter: ${currentCoin.sketchyLabel} (${currentCoin.sketchyScore}/100)\n` +
           `Price: ${currentCoin.priceUsd ? `$${Number(currentCoin.priceUsd).toFixed(8)}` : 'N/A'}\n` +
           `MCap: ${formatMoney(currentCoin.marketCap)}\n` +
           `24h: ${formatPercent(currentCoin.priceChange24h)}\n` +
+          `Liquidity: ${formatMoney(currentCoin.liquidityUsd)}\n` +
+          `Organic score: ${currentCoin.organicScore !== null && currentCoin.organicScore !== undefined ? Number(currentCoin.organicScore).toFixed(1) : 'N/A'}\n` +
+          `Holders: ${currentCoin.holderCount ? Number(currentCoin.holderCount).toLocaleString() : 'N/A'}\n` +
           `Cooked meter: ${currentCoin.cookedRating}\n` +
           `Degen score: ${currentCoin.degenScore}/99\n\n` +
           `Token: ${currentCoin.tokenAddress}`;
@@ -1179,6 +1242,16 @@
         stopSpinLoopSound();
       }
 
+      function scrollToSpinZoneIfNeeded() {
+        const isMobile = window.innerWidth <= 768;
+        if (!isMobile) return;
+
+        spinZone.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
+
       function renderSpinState() {
         result.classList.remove('flash-reveal');
         result.innerHTML = `
@@ -1187,8 +1260,8 @@
             <div id="spinFlash" class="spin-flash">$AGAIN</div>
             <p id="spinSub" class="spin-sub">Consulting the trench gods...</p>
             <div class="scan-pill-row">
-              <div class="scan-pill">Live boosted Solana chaos</div>
-              <div class="scan-pill">Dopamine loading</div>
+              <div class="scan-pill">Live cached Solana chaos</div>
+              <div class="scan-pill">Sketchy Meter loading</div>
               <div class="scan-pill">Conviction not included</div>
             </div>
           </div>
@@ -1241,7 +1314,7 @@
       }
 
       function renderCoin(coin) {
-        const roastLine = randomFrom(roastLines);
+        const roastLine = getSketchyRoast(coin.sketchyLabel);
         const bonusBadge = randomFrom(degenBadges);
         const verdictClass = getVerdictClass(coin.verdict);
         const changeClass = getChangeClass(coin.priceChange24h);
@@ -1250,6 +1323,8 @@
           const label = normalizeLinkLabel(link.type, link.label);
           return `<a href="${escapeHtml(link.url)}" target="_blank" rel="noreferrer">${escapeHtml(label)}</a>`;
         }).join('');
+
+        const sketchyReasons = (coin.sketchyReasons || []).join(' · ');
 
         result.classList.add('flash-reveal');
         result.innerHTML = `
@@ -1275,6 +1350,7 @@
             <div class="coin-copy">
               <strong>Cooked meter:</strong> ${escapeHtml(coin.cookedRating)}<br /><br />
               ${escapeHtml(coin.description || 'No spicy description found. This one is either ultra early or operating fully on vibes.')}
+              <div class="risk-reasons">🕵️ Sketchy Meter reasons: ${escapeHtml(sketchyReasons || 'none')}</div>
               <div class="roast-line">${escapeHtml(roastLine)}</div>
             </div>
 
@@ -1307,7 +1383,10 @@
 
             <div class="mini-meta">
               <div class="tag">⚡ Degen score: ${escapeHtml(coin.degenScore)}/99</div>
-              <div class="tag">🎲 Randomness won again</div>
+              <div class="tag">👥 Holders: ${escapeHtml(coin.holderCount ? Number(coin.holderCount).toLocaleString() : 'N/A')}</div>
+              <div class="tag">🧪 Organic: ${escapeHtml(coin.organicScore !== null && coin.organicScore !== undefined ? Number(coin.organicScore).toFixed(1) : 'N/A')}</div>
+              <div class="tag">${coin.isVerified ? '✅ Verified' : '⚠️ Unverified'}</div>
+              <div class="tag">🕵️ Sketchy Meter: ${escapeHtml(coin.sketchyLabel)} (${escapeHtml(coin.sketchyScore)}/100)</div>
               <div class="tag">${escapeHtml(bonusBadge)}</div>
             </div>
 
@@ -1332,6 +1411,8 @@
       async function fetchRandomCoin() {
         if (isSpinning) return;
 
+        scrollToSpinZoneIfNeeded();
+
         isSpinning = true;
         currentCoin = null;
         stopRevealAnimation();
@@ -1345,48 +1426,57 @@
         statusText.textContent = 'Consulting the trench gods...';
 
         try {
-          const boostsResponse = await fetch('https://api.dexscreener.com/token-boosts/latest/v1');
-          if (!boostsResponse.ok) throw new Error('Could not load boosted tokens.');
+          const response = await fetch(WORKER_URL);
+          if (!response.ok) throw new Error('Could not load random token.');
 
-          const boosts = await boostsResponse.json();
-          const solanaBoosts = boosts.filter(item => item.chainId === 'solana');
-          if (!solanaBoosts.length) throw new Error('No boosted Solana tokens found right now.');
-
-          const randomBoost = solanaBoosts[Math.floor(Math.random() * solanaBoosts.length)];
-
-          const pairResponse = await fetch(`https://api.dexscreener.com/token-pairs/v1/solana/${randomBoost.tokenAddress}`);
-          if (!pairResponse.ok) throw new Error('Could not load token details.');
-
-          const pairs = await pairResponse.json();
-          const bestPair = pickBestPair(pairs);
-          if (!bestPair) throw new Error('No pair data found for this token.');
+          const data = await response.json();
+          if (data.error) throw new Error(data.error);
 
           await new Promise(resolve => setTimeout(resolve, 1650));
 
           currentCoin = {
-            name: bestPair.baseToken?.name || 'Unknown',
-            symbol: bestPair.baseToken?.symbol || '???',
-            tokenAddress: randomBoost.tokenAddress,
-            icon: randomBoost.icon || bestPair.info?.imageUrl || '',
-            description: randomBoost.description,
-            links: randomBoost.links || bestPair.info?.socials || [],
-            dexId: bestPair.dexId,
-            priceUsd: bestPair.priceUsd,
-            marketCap: bestPair.marketCap || bestPair.fdv,
-            volume24h: bestPair.volume?.h24,
-            priceChange24h: bestPair.priceChange?.h24,
-            liquidityUsd: bestPair.liquidity?.usd,
-            dexUrl: bestPair.url,
-            cookedRating: getCookedRating(bestPair.priceChange?.h24),
-            verdict: getVerdict(bestPair.priceChange?.h24),
-            degenScore: getDegenScore(bestPair.liquidity?.usd, bestPair.volume?.h24, bestPair.priceChange?.h24)
+            name: data.name || 'Unknown',
+            symbol: data.symbol || '???',
+            tokenAddress: data.tokenAddress,
+            icon: data.icon || '',
+            description: buildDescription({
+              isVerified: data.isVerified,
+              organicScore: data.organicScore,
+              organicScoreLabel: data.organicScoreLabel,
+              holderCount: data.holderCount,
+              sketchyLabel: data.sketchyLabel,
+              cacheAgeSeconds: data.cache?.ageSeconds
+            }),
+            links: [],
+            dexId: 'Jupiter cache',
+            priceUsd: data.priceUsd,
+            marketCap: data.marketCap,
+            volume24h: data.volume24h,
+            priceChange24h: data.priceChange24h,
+            liquidityUsd: data.liquidityUsd,
+            dexUrl: data.dexUrl,
+            cookedRating: getCookedRating(data.priceChange24h),
+            verdict: getVerdict(data.priceChange24h),
+            degenScore: getDegenScore(
+              data.liquidityUsd,
+              data.volume24h,
+              data.priceChange24h
+            ),
+            holderCount: data.holderCount,
+            organicScore: data.organicScore,
+            organicScoreLabel: data.organicScoreLabel,
+            isVerified: data.isVerified,
+            sketchyScore: data.sketchyScore,
+            sketchyLabel: data.sketchyLabel,
+            sketchyReasons: data.sketchyReasons || [],
+            cache: data.cache || null
           };
 
           stopRevealAnimation();
           playRevealSound();
           renderCoin(currentCoin);
 
-          statusText.textContent = `${currentCoin.name} ( $${currentCoin.symbol} ) just landed. ${currentCoin.cookedRating}`;
+          statusText.textContent = `${currentCoin.name} ( $${currentCoin.symbol} ) just landed. Sketchy Meter ${currentCoin.sketchyLabel}. ${currentCoin.cookedRating}`;
           shareBtn.disabled = false;
           copyBtn.disabled = false;
         } catch (error) {
