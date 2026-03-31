@@ -426,7 +426,11 @@
       .spin-btn,
       .action-btn,
       .cta-btn,
-      .cta-subtle {
+      .cta-subtle,
+      .tip-btn,
+      .tip-modal-btn,
+      .tip-chip,
+      .tip-close {
         cursor: pointer;
         transition: transform 0.16s ease, opacity 0.16s ease, border-color 0.16s ease, background 0.16s ease, color 0.16s ease;
       }
@@ -434,14 +438,20 @@
       .spin-btn:hover,
       .action-btn:hover,
       .cta-btn:hover,
-      .cta-subtle:hover {
+      .cta-subtle:hover,
+      .tip-btn:hover,
+      .tip-modal-btn:hover,
+      .tip-chip:hover,
+      .tip-close:hover {
         transform: translateY(-2px);
       }
 
       .spin-btn:disabled,
       .action-btn:disabled,
       .cta-btn:disabled,
-      .cta-subtle:disabled {
+      .cta-subtle:disabled,
+      .tip-btn:disabled,
+      .tip-modal-btn:disabled {
         opacity: 0.6;
         cursor: not-allowed;
       }
@@ -463,17 +473,32 @@
 
       .action-row {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 12px;
       }
 
-      .action-btn {
+      .action-btn,
+      .tip-btn {
         border-radius: 999px;
         border: 1px solid var(--line);
         background: rgba(255,255,255,0.03);
         color: white;
         padding: 12px 14px;
         font-weight: 800;
+      }
+
+      .tip-btn {
+        border-color: rgba(250,204,21,0.22);
+        background:
+          linear-gradient(135deg, rgba(250,204,21,0.12), rgba(139,92,246,0.10));
+        color: #fde68a;
+      }
+
+      .tip-inline-note {
+        text-align: center;
+        color: #d1d5db;
+        font-size: 0.93rem;
+        line-height: 1.6;
       }
 
       .x-btn {
@@ -763,6 +788,176 @@
         border-top: 1px solid var(--line);
       }
 
+      .tip-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 60;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+        background: rgba(0,0,0,0.72);
+        backdrop-filter: blur(8px);
+      }
+
+      .tip-modal-backdrop.open {
+        display: flex;
+      }
+
+      .tip-modal {
+        width: min(100%, 560px);
+        border-radius: 24px;
+        border: 1px solid var(--line-strong);
+        background:
+          radial-gradient(circle at top, rgba(250,204,21,0.08), transparent 30%),
+          linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01)),
+          #080808;
+        box-shadow: 0 24px 80px rgba(0,0,0,0.55);
+        overflow: hidden;
+      }
+
+      .tip-modal-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        padding: 18px 18px 12px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .tip-modal-title {
+        margin: 0;
+        font-size: 1.35rem;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .tip-modal-sub {
+        margin: 8px 0 0;
+        color: #d1d5db;
+        line-height: 1.6;
+      }
+
+      .tip-close {
+        border: 1px solid var(--line);
+        background: rgba(255,255,255,0.03);
+        color: white;
+        border-radius: 999px;
+        padding: 10px 14px;
+        font-weight: 900;
+      }
+
+      .tip-modal-body {
+        padding: 18px;
+        display: grid;
+        gap: 16px;
+      }
+
+      .tip-chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .tip-chip {
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: rgba(255,255,255,0.03);
+        color: #f5f5f5;
+        padding: 10px 14px;
+        font-weight: 900;
+      }
+
+      .tip-chip.active {
+        color: #0a0a0a;
+        border-color: rgba(250,204,21,0.35);
+        background: linear-gradient(135deg, rgba(250,204,21,0.95), rgba(255,183,3,0.95));
+      }
+
+      .tip-field-wrap {
+        display: grid;
+        gap: 8px;
+      }
+
+      .tip-label {
+        color: #d1d5db;
+        font-size: 0.88rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .tip-input-shell {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        border-radius: 18px;
+        border: 1px solid var(--line);
+        background: rgba(255,255,255,0.03);
+        padding: 0 14px;
+      }
+
+      .tip-currency {
+        color: #fde68a;
+        font-weight: 900;
+      }
+
+      .tip-input {
+        width: 100%;
+        border: 0;
+        outline: none;
+        background: transparent;
+        color: white;
+        padding: 16px 0;
+        font-size: 1rem;
+        font-weight: 800;
+      }
+
+      .tip-address-box {
+        border-radius: 18px;
+        border: 1px solid var(--line);
+        background: rgba(255,255,255,0.025);
+        padding: 14px;
+        color: #d1d5db;
+        line-height: 1.6;
+        font-size: 0.94rem;
+      }
+
+      .tip-address {
+        margin-top: 8px;
+        color: #f5f5f5;
+        font-weight: 900;
+        word-break: break-all;
+      }
+
+      .tip-modal-actions {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .tip-modal-btn {
+        border-radius: 999px;
+        padding: 14px 16px;
+        font-size: 0.96rem;
+        font-weight: 900;
+        border: 1px solid var(--line);
+        background: rgba(255,255,255,0.03);
+        color: white;
+      }
+
+      .tip-modal-btn.primary {
+        border-color: rgba(250,204,21,0.28);
+        background: linear-gradient(135deg, rgba(250,204,21,0.95), rgba(255,183,3,0.94), rgba(34,211,238,0.9));
+        color: #0a0a0a;
+      }
+
+      .tip-foot {
+        color: var(--muted);
+        font-size: 0.9rem;
+        line-height: 1.55;
+      }
+
       @media (max-width: 760px) {
         .stats-grid {
           grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -770,7 +965,8 @@
 
         .action-row,
         .footer-grid,
-        .cta-row {
+        .cta-row,
+        .tip-modal-actions {
           grid-template-columns: 1fr;
         }
 
@@ -930,6 +1126,11 @@
               <div class="action-row">
                 <button id="shareBtn" class="action-btn x-btn" disabled>Share on X</button>
                 <button id="copyBtn" class="action-btn" disabled>Copy shill text</button>
+                <button id="tipBtn" class="tip-btn">💸 Fuel the chaos</button>
+              </div>
+
+              <div class="tip-inline-note">
+                No paid shills. No hidden tax. Just optional trench fuel if this app gave you a laugh.
               </div>
 
               <div class="status-box" id="statusText">Ready to spin. Pure irresponsible optimism is online.</div>
@@ -960,16 +1161,87 @@
       </div>
     </div>
 
+    <div id="tipModalBackdrop" class="tip-modal-backdrop" aria-hidden="true">
+      <div class="tip-modal" role="dialog" aria-modal="true" aria-labelledby="tipModalTitle">
+        <div class="tip-modal-head">
+          <div>
+            <h3 id="tipModalTitle" class="tip-modal-title">Fuel the chaos</h3>
+            <p class="tip-modal-sub">
+              No shilled spins. No pay-to-win trench games. Tip only if SpinAgain gave you value, dopamine, or emotional damage.
+            </p>
+          </div>
+          <button id="tipCloseBtn" class="tip-close" type="button">Close</button>
+        </div>
+
+        <div class="tip-modal-body">
+          <div>
+            <div class="tip-label">Quick trench amounts</div>
+            <div class="tip-chip-row" id="tipChipRow">
+              <button class="tip-chip" type="button" data-amount="0.001">0.001 SOL</button>
+              <button class="tip-chip" type="button" data-amount="0.005">0.005 SOL</button>
+              <button class="tip-chip active" type="button" data-amount="0.01">0.01 SOL</button>
+              <button class="tip-chip" type="button" data-amount="0.05">0.05 SOL</button>
+              <button class="tip-chip" type="button" data-amount="0.1">0.1 SOL</button>
+              <button class="tip-chip" type="button" data-amount="1">1 SOL</button>
+            </div>
+          </div>
+
+          <div class="tip-field-wrap">
+            <label for="tipAmountInput" class="tip-label">Custom amount</label>
+            <div class="tip-input-shell">
+              <span class="tip-currency">SOL</span>
+              <input
+                id="tipAmountInput"
+                class="tip-input"
+                type="number"
+                min="0.000001"
+                step="0.000001"
+                inputmode="decimal"
+                value="0.01"
+                placeholder="0.01"
+              />
+            </div>
+          </div>
+
+          <div class="tip-address-box">
+            <div>Tip wallet</div>
+            <div class="tip-address" id="tipWalletDisplay"></div>
+          </div>
+
+          <div class="tip-modal-actions">
+            <button id="openWalletTipBtn" class="tip-modal-btn primary" type="button">Open in wallet</button>
+            <button id="copyTipAddressBtn" class="tip-modal-btn" type="button">Copy address</button>
+            <button id="copyTipLinkBtn" class="tip-modal-btn" type="button">Copy payment link</button>
+          </div>
+
+          <div class="tip-foot">
+            Wallet support for <code>solana:</code> payment links depends on device + wallet app/browser setup. If direct open does nothing, copy the address or payment link instead.
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script>
       const WORKER_URL = 'https://hidden-breeze-2ff7.stealth-dev-0x.workers.dev/api/random-token';
       const SOL_MINT = 'So11111111111111111111111111111111111111112';
+      const TIP_WALLET = 'E3NjCBxYgBEArQTbTrMRjX9kkAaMvLJRRRDsytnFJLyd';
 
       const spinBtn = document.getElementById('spinBtn');
       const shareBtn = document.getElementById('shareBtn');
       const copyBtn = document.getElementById('copyBtn');
+      const tipBtn = document.getElementById('tipBtn');
       const result = document.getElementById('result');
       const statusText = document.getElementById('statusText');
       const spinZone = document.getElementById('spinZone');
+
+      const tipModalBackdrop = document.getElementById('tipModalBackdrop');
+      const tipCloseBtn = document.getElementById('tipCloseBtn');
+      const tipAmountInput = document.getElementById('tipAmountInput');
+      const tipWalletDisplay = document.getElementById('tipWalletDisplay');
+      const openWalletTipBtn = document.getElementById('openWalletTipBtn');
+      const copyTipAddressBtn = document.getElementById('copyTipAddressBtn');
+      const copyTipLinkBtn = document.getElementById('copyTipLinkBtn');
+      const tipChipRow = document.getElementById('tipChipRow');
 
       let currentCoin = null;
       let audioCtx = null;
@@ -1315,6 +1587,7 @@
         const revealBuyBtn = document.getElementById('revealBuyBtn');
         const revealShareBtn = document.getElementById('revealShareBtn');
         const revealCopyBtn = document.getElementById('revealCopyBtn');
+        const revealTipBtn = document.getElementById('revealTipBtn');
 
         if (revealBuyBtn) {
           revealBuyBtn.addEventListener('click', () => openJupiterModal(currentCoin));
@@ -1322,6 +1595,7 @@
 
         if (revealShareBtn) revealShareBtn.addEventListener('click', shareOnX);
         if (revealCopyBtn) revealCopyBtn.addEventListener('click', copyShillText);
+        if (revealTipBtn) revealTipBtn.addEventListener('click', () => openTipModal());
 
         document.querySelectorAll('.coin-logo').forEach(img => {
           img.addEventListener('error', () => handleCoinImageError(img));
@@ -1409,10 +1683,16 @@
 
             <div class="cta-box">
               <div class="cta-box-title">Expose your conviction</div>
+              <div style="margin:0 0 12px;color:#d1d5db;line-height:1.5;font-weight:700;">
+                Buy, shill, or fuel the fair-play trench engine. Optional support only.
+              </div>
               <div class="cta-row">
                 <button id="revealBuyBtn" class="cta-btn">Buy on Jupiter</button>
                 <button id="revealShareBtn" class="cta-subtle x-btn">Share on X</button>
                 <button id="revealCopyBtn" class="cta-subtle">Copy shill text</button>
+              </div>
+              <div style="margin-top:10px;">
+                <button id="revealTipBtn" class="tip-btn" style="width:100%;">💸 This spin hit different — fuel the chaos</button>
               </div>
             </div>
 
@@ -1457,6 +1737,92 @@
         } catch (error) {
           console.error('Jupiter modal init error:', error);
           statusText.textContent = 'Could not open Jupiter modal.';
+        }
+      }
+
+      function setActiveTipChip(amount) {
+        document.querySelectorAll('.tip-chip').forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.amount === String(amount));
+        });
+      }
+
+      function sanitizeTipAmount(raw) {
+        const num = Number(raw);
+        if (!Number.isFinite(num) || num <= 0) return null;
+        return num;
+      }
+
+      function buildTipLink() {
+        const amount = sanitizeTipAmount(tipAmountInput.value);
+        if (!amount) return null;
+        return `solana:${TIP_WALLET}?amount=${amount}`;
+      }
+
+      function openTipModal(defaultAmount = null) {
+        tipWalletDisplay.textContent = TIP_WALLET;
+
+        if (defaultAmount !== null) {
+          tipAmountInput.value = String(defaultAmount);
+          setActiveTipChip(defaultAmount);
+        }
+
+        tipModalBackdrop.classList.add('open');
+        tipModalBackdrop.setAttribute('aria-hidden', 'false');
+        setTimeout(() => tipAmountInput.focus(), 10);
+      }
+
+      function closeTipModal() {
+        tipModalBackdrop.classList.remove('open');
+        tipModalBackdrop.setAttribute('aria-hidden', 'true');
+      }
+
+      function openWalletTip() {
+        const amount = sanitizeTipAmount(tipAmountInput.value);
+
+        if (!amount) {
+          statusText.textContent = 'Enter a valid SOL amount before fueling the chaos.';
+          return;
+        }
+
+        const link = buildTipLink();
+        if (!link) {
+          statusText.textContent = 'Could not build wallet payment link.';
+          return;
+        }
+
+        statusText.textContent = `Opening wallet for ${amount} SOL tip...`;
+
+        window.location.href = link;
+      }
+
+      async function copyTipAddress() {
+        try {
+          await navigator.clipboard.writeText(TIP_WALLET);
+          statusText.textContent = 'Tip wallet copied. Respect the trench fuel.';
+        } catch (error) {
+          statusText.textContent = 'Could not copy tip wallet address.';
+        }
+      }
+
+      async function copyTipLink() {
+        const amount = sanitizeTipAmount(tipAmountInput.value);
+
+        if (!amount) {
+          statusText.textContent = 'Enter a valid SOL amount before copying payment link.';
+          return;
+        }
+
+        const link = buildTipLink();
+        if (!link) {
+          statusText.textContent = 'Could not build wallet payment link.';
+          return;
+        }
+
+        try {
+          await navigator.clipboard.writeText(link);
+          statusText.textContent = `Payment link copied for ${amount} SOL.`;
+        } catch (error) {
+          statusText.textContent = 'Could not copy payment link.';
         }
       }
 
@@ -1566,6 +1932,49 @@
           statusText.textContent = 'Copy failed. Your browser is being difficult.';
         }
       }
+
+      tipWalletDisplay.textContent = TIP_WALLET;
+
+      tipBtn.addEventListener('click', () => openTipModal());
+      tipCloseBtn.addEventListener('click', closeTipModal);
+      openWalletTipBtn.addEventListener('click', openWalletTip);
+      copyTipAddressBtn.addEventListener('click', copyTipAddress);
+      copyTipLinkBtn.addEventListener('click', copyTipLink);
+
+      tipChipRow.addEventListener('click', (event) => {
+        const chip = event.target.closest('.tip-chip');
+        if (!chip) return;
+        const amount = chip.dataset.amount;
+        tipAmountInput.value = amount;
+        setActiveTipChip(amount);
+      });
+
+      tipAmountInput.addEventListener('input', () => {
+        const normalized = String(tipAmountInput.value || '').trim();
+        let matched = false;
+
+        document.querySelectorAll('.tip-chip').forEach(btn => {
+          const isMatch = btn.dataset.amount === normalized;
+          btn.classList.toggle('active', isMatch);
+          if (isMatch) matched = true;
+        });
+
+        if (!matched) {
+          document.querySelectorAll('.tip-chip').forEach(btn => btn.classList.remove('active'));
+        }
+      });
+
+      tipModalBackdrop.addEventListener('click', (event) => {
+        if (event.target === tipModalBackdrop) {
+          closeTipModal();
+        }
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && tipModalBackdrop.classList.contains('open')) {
+          closeTipModal();
+        }
+      });
 
       spinBtn.addEventListener('click', fetchRandomCoin);
       shareBtn.addEventListener('click', shareOnX);
